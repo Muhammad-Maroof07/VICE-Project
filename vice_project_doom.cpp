@@ -764,7 +764,7 @@ void fire_weapon(const int weapon, bool& prev_fire, int& magnum_ammo, int& grena
 				if (!bullet_active[i])
 				{
 					bullet_active[i] = true;
-					bullet_y[i] = player_y + Pheight / 3;
+					bullet_y[i] = player_y + Pheight * 45 / 100;
 					if (facingRight)
 					{
 						bullet_dir[i] = 1;
@@ -788,7 +788,7 @@ void fire_weapon(const int weapon, bool& prev_fire, int& magnum_ammo, int& grena
 				{
 					grenade_active[i] = true;
 					grenade_x[i] = player_x + Pwidth / 2 - 8;
-					grenade_y[i] = player_y + 20;
+					grenade_y[i] = player_y + 36;
 					grenade_vy[i] = -10;
 					if (facingRight)
 					{
@@ -934,6 +934,119 @@ bool check_screen_change(float& player_x, int& current_screen, const int total_s
 		return true;
 	}
 	return false;
+}
+
+// ---------------------------------------------------------------
+// PLAYER BODY PARTS
+// Quinn is drawn from 5 sprites that share one image, Data/player_parts.png:
+// part 0 = back arm, 1 = legs, 2 = torso, 3 = head, 4 = front arm.
+// Every frame is chosen with setTextureRect, so real sprite pieces can be used later
+// by changing only the rectangles. The body box is 18 x 32 pixels, drawn at scale 3.
+// ---------------------------------------------------------------
+
+// draws one body part: (tx, ty, tw, th) is its frame on the image,
+// (ox, oy) is where it sits inside the 18 x 32 body box (before scaling)
+void show_part(RenderWindow& window, Sprite& part, const int tx, const int ty, const int tw, const int th, const int ox, const int oy, const float player_x, const float player_y, const bool facingRight, const float yscale)
+{
+	part.setTextureRect(IntRect(tx, ty, tw, th));
+
+	float draw_y = player_y + oy * 3 * yscale;
+
+	if (facingRight)
+	{
+		part.setScale(3, 3 * yscale);
+		part.setPosition(player_x + ox * 3, draw_y);
+	}
+	else
+	{
+		// a negative scale mirrors the part, so its position is the mirrored left edge
+		part.setScale(-3, 3 * yscale);
+		part.setPosition(player_x + (18 - ox) * 3, draw_y);
+	}
+
+	window.draw(part);
+}
+
+// chooses the frame of every body part from what the player is doing, then draws them
+void draw_player(RenderWindow& window, Sprite part[], const float player_x, const float player_y, const bool facingRight, const bool ducking, const bool climbing, const bool onGround, const bool moving, const bool climb_moving, const int anim_counter, const int whip_timer, const int shoot_timer, const bool hurt)
+{
+	// walk cycle: the legs and the arms swing in opposite directions
+	const int leg_seq[4] = { 1, 0, 2, 0 };
+	const int front_arm_seq[4] = { 2, 0, 1, 0 };
+	const int back_arm_seq[4] = { 1, 0, 2, 0 };
+
+	int leg_frame = 0;
+	int front_arm = 0;
+	int back_arm = 0;
+	int torso_frame = 0;
+	int bob = 0;
+	float yscale = 1;
+
+	int walk_step = (anim_counter / 6) % 4;
+	int climb_step = (anim_counter / 8) % 2;
+
+	if (climbing)
+	{
+		leg_frame = 5;
+		front_arm = 3;
+		back_arm = 3;
+		if (climb_moving)
+		{
+			// arms and legs alternate while climbing
+			leg_frame = 5 + climb_step;
+			if (climb_step == 0)
+			{
+				back_arm = 0;
+			}
+			else
+			{
+				front_arm = 0;
+			}
+		}
+	}
+	else if (!onGround)
+	{
+		// jumping or falling: legs tucked, arms up
+		leg_frame = 3;
+		front_arm = 3;
+		back_arm = 3;
+	}
+	else if (ducking)
+	{
+		// crouching: legs folded, body squashed to half height
+		leg_frame = 4;
+		torso_frame = 1;
+		yscale = 0.5;
+	}
+	else if (moving)
+	{
+		leg_frame = leg_seq[walk_step];
+		front_arm = front_arm_seq[walk_step];
+		back_arm = back_arm_seq[walk_step];
+		if (walk_step == 0 || walk_step == 2)
+		{
+			bob = 1;
+		}
+	}
+
+	// the front arm points forward while attacking
+	if ((whip_timer > 0 || shoot_timer > 0) && !climbing)
+	{
+		front_arm = 4;
+	}
+
+	int head_frame = 0;
+	if (hurt)
+	{
+		head_frame = 1;
+	}
+
+	// drawing order: back arm, legs, torso, head, front arm
+	show_part(window, part[0], back_arm * 10, 22, 10, 12, 0, 11 - bob, player_x, player_y, facingRight, yscale);
+	show_part(window, part[1], leg_frame * 14, 34, 14, 10, 2, 22, player_x, player_y, facingRight, yscale);
+	show_part(window, part[2], torso_frame * 10, 10, 10, 12, 4, 10 - bob, player_x, player_y, facingRight, yscale);
+	show_part(window, part[3], head_frame * 10, 0, 10, 10, 5, 0 - bob, player_x, player_y, facingRight, yscale);
+	show_part(window, part[4], front_arm * 10, 22, 10, 12, 8, 11 - bob, player_x, player_y, facingRight, yscale);
 }
 
 // ---------------------------------------------------------------
@@ -1131,6 +1244,24 @@ int main()
 	long long seed = time(0);
 	spawn_enemies(en_type, en_screen, en_x, en_y, en_vx, en_vy, en_dir, en_health, en_alive, en_ground, en_timer, seed, max_enemies, num_crawlers, total_screens, screen_x, (height - 1) * cell_size);
 
+	// player body parts (see draw_player)
+	bool use_body_parts = true;
+	Texture partsTexture;
+	Sprite part[5];
+	if (!partsTexture.loadFromFile("Data/player_parts.png"))
+	{
+		cout << "Could not load Data/player_parts.png" << endl;
+		return 1;
+	}
+	for (int i = 0; i < 5; i += 1)
+	{
+		part[i].setTexture(partsTexture);
+	}
+	int anim_counter = 0;
+	int shoot_timer = 0;
+	bool moving = false;
+	bool climb_moving = false;
+
 	// creating level array
 	lvl = new char* [height];
 	for (int i = 0; i < height; i += 1)
@@ -1157,6 +1288,10 @@ int main()
 			window.close();
 		}
 
+		// remember where the player was, to know if he moved this frame
+		float old_x = player_x;
+		float old_y = player_y;
+
 		// update (no gravity while climbing a ladder)
 		player_input(lvl, player_x, player_y, velocityY, onGround, facingRight, ducking, climbing, PlayerHeight, PlayerWidth, StandHeight, DuckHeight, speed, jump_speed, climb_speed, screen_x, cell_size, height, width);
 		if (!climbing)
@@ -1164,12 +1299,29 @@ int main()
 			player_gravity(lvl, velocityY, onGround, gravity, terminal_Velocity, player_x, player_y, cell_size, height, width, PlayerHeight, PlayerWidth);
 		}
 
+		// animation state
+		moving = (player_x != old_x) && !climbing;
+		climb_moving = climbing && (player_y != old_y);
+		anim_counter += 1;
+
 		// weapons
 		switch_weapon(weapon);
+		int old_magnum = magnum_ammo;
+		int old_grenade = grenade_ammo;
 		fire_weapon(weapon, prev_fire, magnum_ammo, grenade_ammo, whip_timer, bullet_x, bullet_y, bullet_dir, bullet_active, max_bullets, grenade_x, grenade_y, grenade_vx, grenade_vy, grenade_active, max_grenades, player_x, player_y, facingRight, PlayerWidth, PlayerHeight);
 		if (whip_timer > 0)
 		{
 			whip_timer -= 1;
+		}
+
+		// a magnum shot or a grenade throw makes the front arm point forward for 10 frames
+		if (magnum_ammo < old_magnum || grenade_ammo < old_grenade)
+		{
+			shoot_timer = 10;
+		}
+		if (shoot_timer > 0)
+		{
+			shoot_timer -= 1;
 		}
 		update_bullets(lvl, bullet_x, bullet_y, bullet_dir, bullet_active, max_bullets, 14, screen_x, height, width, cell_size);
 		update_grenades(lvl, grenade_x, grenade_y, grenade_vx, grenade_vy, grenade_active, max_grenades, 0.8, screen_x, height, width, cell_size, current_screen, en_type, en_screen, en_x, en_y, en_health, en_alive, max_enemies, score);
@@ -1192,7 +1344,7 @@ int main()
 			{
 				whip_x = player_x + PlayerWidth;
 			}
-			hit_enemies(current_screen, en_type, en_screen, en_x, en_y, en_health, en_alive, max_enemies, whip_x, player_y + 24, 64, 16, 10, score);
+			hit_enemies(current_screen, en_type, en_screen, en_x, en_y, en_health, en_alive, max_enemies, whip_x, player_y + 40, 64, 16, 10, score);
 		}
 
 		// touching an enemy hurts, then the player is protected for 60 frames
@@ -1262,7 +1414,14 @@ int main()
 		// blink while protected after a hit
 		if (hurt_timer % 12 < 6)
 		{
-			window.draw(PlayerSprite);
+			if (use_body_parts)
+			{
+				draw_player(window, part, player_x, player_y, facingRight, ducking, climbing, onGround, moving, climb_moving, anim_counter, whip_timer, shoot_timer, hurt_timer > 0);
+			}
+			else
+			{
+				window.draw(PlayerSprite);
+			}
 		}
 
 		// whip: a short-lived sprite in front of the player
@@ -1271,12 +1430,12 @@ int main()
 			if (facingRight)
 			{
 				whipSprite.setScale(1, 1);
-				whipSprite.setPosition(player_x + PlayerWidth, player_y + 24);
+				whipSprite.setPosition(player_x + PlayerWidth, player_y + 40);
 			}
 			else
 			{
 				whipSprite.setScale(-1, 1);
-				whipSprite.setPosition(player_x, player_y + 24);
+				whipSprite.setPosition(player_x, player_y + 40);
 			}
 			window.draw(whipSprite);
 		}
