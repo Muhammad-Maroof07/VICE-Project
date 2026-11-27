@@ -17,27 +17,28 @@ int screen_y = 896;
 // '#' = solid block, 'H' = ladder, ' ' = empty
 // ---------------------------------------------------------------
 
-// puts solid blocks in row `row` from column c1 to column c2
-void place_platform(char** lvl, const int row, const int c1, const int c2)
+// puts the tile character ch in row `row` from column c1 to column c2
+void place_platform(char** lvl, const int row, const int c1, const int c2, const char ch)
 {
 	for (int j = c1; j <= c2; j += 1)
 	{
-		lvl[row][j] = '#';
+		lvl[row][j] = ch;
 	}
 }
 
-// puts a ladder in column `col` from row r1 (top) down to row r2
-// the top ladder cell should be level with the platform it leads to
-void place_ladder(char** lvl, const int col, const int r1, const int r2)
+// puts the tile character ch in column `col` from row r1 (top) down to row r2
+// (ladders use 'H'; the top ladder cell should be level with the platform it leads to)
+void place_column(char** lvl, const int col, const int r1, const int r2, const char ch)
 {
 	for (int i = r1; i <= r2; i += 1)
 	{
-		lvl[i][col] = 'H';
+		lvl[i][col] = ch;
 	}
 }
 
-// builds one screen of the level (temporary layouts, real ones come later)
-// keep the left and right edges of every screen open so the player can walk across
+// builds one screen of level 1: girders floating over pits, as in the game video.
+// every screen has girders at the left and right edges (row 11) so crossing between screens is always safe.
+// tiles: G girder, C crumbling girder, S hazard girder, P decoration pillar, H ladder, E exit
 void load_screen(char** lvl, const int screen, const int height, const int width)
 {
 	for (int i = 0; i < height; i += 1)
@@ -48,42 +49,88 @@ void load_screen(char** lvl, const int screen, const int height, const int width
 		}
 	}
 
-	// floor
-	place_platform(lvl, 13, 0, width - 1);
-
 	if (screen == 0)
 	{
-		place_platform(lvl, 10, 3, 6);
-		place_ladder(lvl, 2, 10, 12);
-		place_platform(lvl, 8, 9, 13);
-		place_ladder(lvl, 8, 8, 12);
+		// start platform, a lower beam over a pit, then a step up
+		place_platform(lvl, 11, 0, 5, 'G');
+		place_column(lvl, 1, 12, 13, 'P');
+		place_column(lvl, 4, 12, 13, 'P');
+		place_platform(lvl, 12, 8, 11, 'G');
+		place_platform(lvl, 13, 9, 10, 'S');
+		place_platform(lvl, 11, 14, 17, 'G');
 	}
 	else if (screen == 1)
 	{
-		place_platform(lvl, 10, 2, 5);
-		place_ladder(lvl, 1, 10, 12);
-		place_platform(lvl, 7, 7, 10);
-		place_ladder(lvl, 6, 7, 12);
-		place_platform(lvl, 10, 12, 15);
-		place_ladder(lvl, 11, 10, 12);
+		// stepping girders over pits
+		place_platform(lvl, 11, 0, 3, 'G');
+		place_platform(lvl, 10, 6, 9, 'G');
+		place_column(lvl, 7, 11, 13, 'P');
+		place_column(lvl, 9, 11, 13, 'P');
+		place_platform(lvl, 8, 11, 14, 'G');
+		place_platform(lvl, 11, 15, 17, 'G');
 	}
 	else if (screen == 2)
 	{
-		place_platform(lvl, 11, 4, 7);
-		place_platform(lvl, 9, 9, 12);
-		place_ladder(lvl, 13, 9, 12);
+		// a bridge of crumbling girders
+		place_platform(lvl, 11, 0, 2, 'G');
+		place_platform(lvl, 11, 3, 6, 'C');
+		place_platform(lvl, 11, 7, 10, 'G');
+		place_column(lvl, 8, 12, 13, 'P');
+		place_platform(lvl, 9, 12, 14, 'G');
+		place_platform(lvl, 11, 15, 17, 'G');
 	}
 	else if (screen == 3)
 	{
-		place_platform(lvl, 10, 1, 4);
-		place_ladder(lvl, 5, 10, 12);
-		place_platform(lvl, 10, 6, 9);
-		place_platform(lvl, 8, 12, 16);
-		place_ladder(lvl, 11, 8, 12);
+		// a long girder, then a ladder up to the exit
+		place_platform(lvl, 11, 0, 9, 'G');
+		place_column(lvl, 2, 12, 13, 'P');
+		place_column(lvl, 6, 12, 13, 'P');
+		place_column(lvl, 8, 5, 10, 'H');
+		place_platform(lvl, 5, 9, 14, 'G');
+		lvl[4][13] = 'E';
 	}
 }
 
-void display_level(RenderWindow& window, char** lvl, Texture& bgTex, Sprite& bgSprite, Texture& blockTexture, Sprite& blockSprite, Texture& ladderTexture, Sprite& ladderSprite, const int height, const int width, const int cell_size)
+// loads a screen and clears the crumbling-girder timers
+void enter_screen(char** lvl, int** crumble, const int screen, const int height, const int width)
+{
+	load_screen(lvl, screen, height, width);
+	for (int i = 0; i < height; i += 1)
+	{
+		for (int j = 0; j < width; j += 1)
+		{
+			crumble[i][j] = 0;
+		}
+	}
+}
+
+// true for every tile you can stand on or bump into
+bool is_solid_char(const char c)
+{
+	return c == '#' || c == 'G' || c == 'V' || c == 'C' || c == 'S' || c == 'B' || c == 'M' || c == 'R';
+}
+
+// which tile picture a map character uses (-1 = nothing to draw)
+int tile_number(const char c)
+{
+	if (c == '#') return 0;
+	if (c == 'G') return 1;
+	if (c == 'V' || c == 'P') return 2;
+	if (c == 'C') return 3;
+	if (c == 'B') return 4;
+	if (c == 'M') return 5;
+	if (c == 'R') return 6;
+	if (c == 'S') return 7;
+	if (c == 'H') return 8;
+	if (c == 'E') return 9;
+	if (c == 'Y') return 10;
+	if (c == 'Z') return 11;
+	if (c == 'W') return 12;
+	if (c == 'F') return 13;
+	return -1;
+}
+
+void display_level(RenderWindow& window, char** lvl, Sprite& bgSprite, Sprite tileSprite[], const int height, const int width, const int cell_size)
 {
 	window.draw(bgSprite);
 
@@ -91,15 +138,11 @@ void display_level(RenderWindow& window, char** lvl, Texture& bgTex, Sprite& bgS
 	{
 		for (int j = 0; j < width; j += 1)
 		{
-			if (lvl[i][j] == '#')
+			int t = tile_number(lvl[i][j]);
+			if (t >= 0)
 			{
-				blockSprite.setPosition(j * cell_size, i * cell_size);
-				window.draw(blockSprite);
-			}
-			else if (lvl[i][j] == 'H')
-			{
-				ladderSprite.setPosition(j * cell_size, i * cell_size);
-				window.draw(ladderSprite);
+				tileSprite[t].setPosition(j * cell_size, i * cell_size);
+				window.draw(tileSprite[t]);
 			}
 		}
 	}
@@ -122,7 +165,7 @@ bool is_solid(char** lvl, const float x, const float y, const int height, const 
 	{
 		return false;
 	}
-	return lvl[(int)y / cell_size][(int)x / cell_size] == '#';
+	return is_solid_char(lvl[(int)y / cell_size][(int)x / cell_size]);
 }
 
 // true if the pixel point (x, y) is inside a ladder cell
@@ -457,9 +500,65 @@ void append_number(char dest[], int number)
 }
 
 // ---------------------------------------------------------------
+// CRUMBLING GIRDERS ('C'): 30 frames after the player stands on one it disappears,
+// and it comes back 180 frames later (when the player is not inside it).
+// crumble[row][col]: 0 = normal, 1..29 = about to fall, negative = gone, counting up to 0
+// ---------------------------------------------------------------
+void update_crumbling(char** lvl, int** crumble, const float player_x, const float player_y, const int Pheight, const int Pwidth, const bool onGround, const int height, const int width, const int cell_size)
+{
+	// start the timer of the girder under the player's feet
+	if (onGround)
+	{
+		int row = (int)(player_y + Pheight + 1) / cell_size;
+		for (int k = 0; k < 3; k += 1)
+		{
+			float x = player_x + k * (Pwidth - 1) / 2;
+			int col = (int)x / cell_size;
+			if (row < height && col >= 0 && col < width && lvl[row][col] == 'C' && crumble[row][col] == 0)
+			{
+				crumble[row][col] = 1;
+			}
+		}
+	}
+
+	for (int r = 0; r < height; r += 1)
+	{
+		for (int c = 0; c < width; c += 1)
+		{
+			if (crumble[r][c] > 0)
+			{
+				crumble[r][c] += 1;
+				if (crumble[r][c] >= 30)
+				{
+					lvl[r][c] = ' ';
+					crumble[r][c] = -180;
+				}
+			}
+			else if (crumble[r][c] < 0)
+			{
+				crumble[r][c] += 1;
+				if (crumble[r][c] == 0)
+				{
+					// do not rebuild the girder around the player
+					bool inside = player_x < (c + 1) * cell_size && player_x + Pwidth > c * cell_size && player_y < (r + 1) * cell_size && player_y + Pheight > r * cell_size;
+					if (inside)
+					{
+						crumble[r][c] = -1;
+					}
+					else
+					{
+						lvl[r][c] = 'C';
+					}
+				}
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------
 // ENEMIES
 // every enemy lives in a set of parallel arrays (index i = one enemy)
-// type 0 = spiked crawler, type 1 = blue jumper
+// type 0 = spiked crawler, type 1 = blue jumper, type 2 = flying insect
 // ---------------------------------------------------------------
 
 int enemy_width(const int type)
@@ -473,7 +572,7 @@ int enemy_width(const int type)
 
 int enemy_height(const int type)
 {
-	if (type == 0)
+	if (type == 0 || type == 2)
 	{
 		return 32;
 	}
@@ -497,7 +596,7 @@ bool rects_overlap(const float ax, const float ay, const float aw, const float a
 
 // creates the level 1 enemies: 4 crawlers (indexes 0-3) then 5 blue jumpers (indexes 4-8).
 // each gets a random screen and a random spot on the floor of that screen.
-void spawn_enemies(int en_type[], int en_screen[], float en_x[], float en_y[], float en_vx[], float en_vy[], int en_dir[], int en_health[], bool en_alive[], bool en_ground[], int en_timer[], long long& seed, const int max_enemies, const int num_crawlers, const int total_screens, const int screen_width, const int floor_y)
+void spawn_enemies(int en_type[], int en_screen[], float en_x[], float en_y[], float en_vx[], float en_vy[], int en_dir[], int en_health[], bool en_alive[], bool en_ground[], int en_timer[], long long& seed, const int max_enemies, const int num_crawlers, const int num_jumpers, const int total_screens, const int screen_width, char** temp_lvl, const int height, const int width, const int cell_size)
 {
 	for (int i = 0; i < max_enemies; i += 1)
 	{
@@ -505,14 +604,60 @@ void spawn_enemies(int en_type[], int en_screen[], float en_x[], float en_y[], f
 		{
 			en_type[i] = 0;
 		}
-		else
+		else if (i < num_crawlers + num_jumpers)
 		{
 			en_type[i] = 1;
 		}
+		else
+		{
+			en_type[i] = 2;
+		}
 
+		// insects get a random screen and x; crawlers and jumpers are put on a random girder
 		en_screen[i] = random_number(seed, total_screens);
 		en_x[i] = 200 + random_number(seed, screen_width - 400);
-		en_y[i] = floor_y - enemy_height(en_type[i]);
+		en_y[i] = 0;
+
+		if (en_type[i] != 2)
+		{
+			int w = enemy_width(en_type[i]);
+			int h = enemy_height(en_type[i]);
+			bool found = false;
+
+			for (int attempt = 0; attempt < 80 && !found; attempt += 1)
+			{
+				int screen = random_number(seed, total_screens);
+				int col = 2 + random_number(seed, width - 4);
+
+				// not on the start platform, so nothing spawns on top of the player
+				if (screen == 0 && col < 6)
+				{
+					continue;
+				}
+
+				load_screen(temp_lvl, screen, height, width);
+
+				// the first solid, non-crumbling cell in this column with free space above it
+				for (int row = 2; row < height && !found; row += 1)
+				{
+					if (is_solid_char(temp_lvl[row][col]) && temp_lvl[row][col] != 'C' && temp_lvl[row - 1][col] == ' ' && temp_lvl[row - 2][col] == ' ')
+					{
+						found = true;
+						en_screen[i] = screen;
+						en_x[i] = col * cell_size + (cell_size - w) / 2;
+						en_y[i] = row * cell_size - h;
+					}
+				}
+			}
+
+			if (!found)
+			{
+				// fallback: the long girder of screen 3
+				en_screen[i] = 3;
+				en_x[i] = 5 * cell_size;
+				en_y[i] = 11 * cell_size - h;
+			}
+		}
 		en_vx[i] = 0;
 		en_vy[i] = 0;
 		if (random_number(seed, 2) == 0)
@@ -527,6 +672,15 @@ void spawn_enemies(int en_type[], int en_screen[], float en_x[], float en_y[], f
 		en_alive[i] = true;
 		en_ground[i] = true;
 		en_timer[i] = 40 + random_number(seed, 40);
+
+		if (en_type[i] == 2)
+		{
+			// a flying insect hovers high: en_vy keeps its base height, en_timer is its bobbing phase
+			en_vy[i] = 480 + random_number(seed, 160);
+			en_y[i] = en_vy[i];
+			en_timer[i] = random_number(seed, 90);
+			en_ground[i] = false;
+		}
 	}
 }
 
@@ -548,6 +702,18 @@ void update_enemies(char** lvl, const int current_screen, const float player_x, 
 		if (en_type[i] == 0)
 		{
 			// ---- spiked crawler ----
+			// if the girder under it crumbled, it falls into the pit
+			bool supported = is_solid(lvl, en_x[i] + 4, en_y[i] + h + 1, height, width, cell_size) || is_solid(lvl, en_x[i] + w - 5, en_y[i] + h + 1, height, width, cell_size);
+			if (!supported)
+			{
+				en_y[i] += 6;
+				if (en_y[i] + h >= height * cell_size - 1)
+				{
+					en_alive[i] = false;
+				}
+				continue;
+			}
+
 			float new_x = en_x[i] + en_dir[i] * 2;
 
 			// x of the edge we are walking toward
@@ -570,7 +736,7 @@ void update_enemies(char** lvl, const int current_screen, const float player_x, 
 				en_x[i] = new_x;
 			}
 		}
-		else
+		else if (en_type[i] == 1)
 		{
 			// ---- blue jumper ----
 
@@ -633,6 +799,12 @@ void update_enemies(char** lvl, const int current_screen, const float player_x, 
 				}
 			}
 
+			// a jumper that falls into a pit is gone
+			if (en_y[i] + h >= height * cell_size - 1)
+			{
+				en_alive[i] = false;
+			}
+
 			// on the ground: count down, then jump toward the player
 			if (en_ground[i])
 			{
@@ -653,6 +825,24 @@ void update_enemies(char** lvl, const int current_screen, const float player_x, 
 					en_timer[i] = 40 + random_number(seed, 40);
 				}
 			}
+		}
+		else
+		{
+			// ---- flying insect ----
+			// flies sideways at 2 pixels per frame and turns at the screen edges,
+			// while bobbing up and down around its base height (en_vy)
+			float new_x = en_x[i] + en_dir[i] * 2;
+			if (new_x < 0 || new_x > screen_width - w)
+			{
+				en_dir[i] = -en_dir[i];
+			}
+			else
+			{
+				en_x[i] = new_x;
+			}
+
+			en_timer[i] += 1;
+			en_y[i] = en_vy[i] + 40 * sin(en_timer[i] * 6.2832 / 90);
 		}
 	}
 }
@@ -1071,8 +1261,12 @@ int main()
 	// level and background textures and sprites
 	Texture bgTex;
 	Sprite bgSprite;
-	Texture blockTexture;
-	Sprite blockSprite;
+
+	// one picture for every kind of tile (see tile_number)
+	const int num_tiles = 14;
+	Texture tileTexture[num_tiles];
+	Sprite tileSprite[num_tiles];
+	const char* tile_file[num_tiles] = { "Data/block1.png", "Data/girder_h.png", "Data/girder_v.png", "Data/girder_crumble.png", "Data/container.png", "Data/mesh.png", "Data/rock.png", "Data/girder_hazard.png", "Data/ladder.png", "Data/exit.png", "Data/vine.png", "Data/vine_swing.png", "Data/water.png", "Data/waterfall.png" };
 
 	if (!bgTex.loadFromFile("Data/bg.png"))
 	{
@@ -1082,22 +1276,15 @@ int main()
 	bgSprite.setTexture(bgTex);
 	bgSprite.setPosition(0, 0);
 
-	if (!blockTexture.loadFromFile("Data/block1.png"))
+	for (int i = 0; i < num_tiles; i += 1)
 	{
-		cout << "Could not load Data/block1.png" << endl;
-		return 1;
+		if (!tileTexture[i].loadFromFile(tile_file[i]))
+		{
+			cout << "Could not load " << tile_file[i] << endl;
+			return 1;
+		}
+		tileSprite[i].setTexture(tileTexture[i]);
 	}
-	blockSprite.setTexture(blockTexture);
-
-	Texture ladderTexture;
-	Sprite ladderSprite;
-
-	if (!ladderTexture.loadFromFile("Data/ladder.png"))
-	{
-		cout << "Could not load Data/ladder.png" << endl;
-		return 1;
-	}
-	ladderSprite.setTexture(ladderTexture);
 
 	// music initialisation
 	Music lvlMusic;
@@ -1111,8 +1298,13 @@ int main()
 	lvlMusic.setLoop(true);
 
 	// player data
-	float player_x = 780;
-	float player_y = 60;
+	float player_x = 100;
+	float player_y = 500;
+
+	// last safe spot (standing on a girder): the player comes back here after falling into a pit
+	float safe_x = 100;
+	float safe_y = 608;
+	int safe_screen = 0;
 
 	const float gravity = 1;
 	const float speed = 5;
@@ -1209,9 +1401,11 @@ int main()
 	hudText.setFillColor(Color(188, 190, 0));
 	hudText.setPosition(16, 44);
 
-	// enemies (level 1: 4 crawlers + 5 blue jumpers)
+	// enemies (level 1: 4 crawlers + 5 blue jumpers + 6 flying insects)
 	const int num_crawlers = 4;
-	const int max_enemies = 9;
+	const int num_jumpers = 5;
+	const int num_insects = 6;
+	const int max_enemies = num_crawlers + num_jumpers + num_insects;
 	int en_type[max_enemies];
 	int en_screen[max_enemies];
 	float en_x[max_enemies];
@@ -1228,10 +1422,10 @@ int main()
 	int deaths = 0;
 	int hurt_timer = 0;
 
-	Texture enemyTexture[2];
-	Sprite enemySprite[2];
-	const char* enemy_file[2] = { "Data/crawler.png", "Data/jumper.png" };
-	for (int i = 0; i < 2; i += 1)
+	Texture enemyTexture[3];
+	Sprite enemySprite[3];
+	const char* enemy_file[3] = { "Data/crawler.png", "Data/jumper.png", "Data/insect.png" };
+	for (int i = 0; i < 3; i += 1)
 	{
 		if (!enemyTexture[i].loadFromFile(enemy_file[i]))
 		{
@@ -1242,7 +1436,18 @@ int main()
 	}
 
 	long long seed = time(0);
-	spawn_enemies(en_type, en_screen, en_x, en_y, en_vx, en_vy, en_dir, en_health, en_alive, en_ground, en_timer, seed, max_enemies, num_crawlers, total_screens, screen_x, (height - 1) * cell_size);
+	// a temporary level array, only used by spawn_enemies to look for girders
+	char** temp_lvl = new char* [height];
+	for (int i = 0; i < height; i += 1)
+	{
+		temp_lvl[i] = new char[width];
+	}
+	spawn_enemies(en_type, en_screen, en_x, en_y, en_vx, en_vy, en_dir, en_health, en_alive, en_ground, en_timer, seed, max_enemies, num_crawlers, num_jumpers, total_screens, screen_x, temp_lvl, height, width, cell_size);
+	for (int i = 0; i < height; i += 1)
+	{
+		delete[] temp_lvl[i];
+	}
+	delete[] temp_lvl;
 
 	// player body parts (see draw_player)
 	bool use_body_parts = true;
@@ -1268,7 +1473,14 @@ int main()
 	{
 		lvl[i] = new char[width];
 	}
-	load_screen(lvl, current_screen, height, width);
+
+	// timers of the crumbling girders
+	int** crumble = new int* [height];
+	for (int i = 0; i < height; i += 1)
+	{
+		crumble[i] = new int[width];
+	}
+	enter_screen(lvl, crumble, current_screen, height, width);
 
 	Event ev;
 	// main loop
@@ -1297,6 +1509,36 @@ int main()
 		if (!climbing)
 		{
 			player_gravity(lvl, velocityY, onGround, gravity, terminal_Velocity, player_x, player_y, cell_size, height, width, PlayerHeight, PlayerWidth);
+		}
+
+		// crumbling girders
+		update_crumbling(lvl, crumble, player_x, player_y, PlayerHeight, PlayerWidth, onGround, height, width, cell_size);
+
+		// remember the last safe spot (standing on a girder that does not crumble)
+		if (onGround && !climbing && !ducking && player_y + PlayerHeight < height * cell_size - 1)
+		{
+			char under = lvl[(int)(player_y + PlayerHeight + 1) / cell_size][(int)(player_x + PlayerWidth / 2) / cell_size];
+			if (is_solid_char(under) && under != 'C')
+			{
+				safe_x = player_x;
+				safe_y = player_y;
+				safe_screen = current_screen;
+			}
+		}
+
+		// falling into a pit costs 20 health and puts the player back on the last safe spot
+		if (player_y + PlayerHeight >= height * cell_size - 1)
+		{
+			health -= 20;
+			hurt_timer = 60;
+			current_screen = safe_screen;
+			enter_screen(lvl, crumble, current_screen, height, width);
+			player_x = safe_x;
+			player_y = safe_y;
+			velocityY = 0;
+			climbing = false;
+			ducking = false;
+			PlayerHeight = StandHeight;
 		}
 
 		// animation state
@@ -1373,18 +1615,20 @@ int main()
 		{
 			deaths += 1;
 			health = max_health;
-			player_x = 780;
-			player_y = 60;
+			player_x = 100;
+			player_y = 500;
 			velocityY = 0;
 			climbing = false;
+			ducking = false;
+			PlayerHeight = StandHeight;
 			current_screen = 0;
-			load_screen(lvl, current_screen, height, width);
+			enter_screen(lvl, crumble, current_screen, height, width);
 		}
 
 		// switch screen when the player walks off an edge
 		if (check_screen_change(player_x, current_screen, total_screens, screen_x, PlayerWidth))
 		{
-			load_screen(lvl, current_screen, height, width);
+			enter_screen(lvl, crumble, current_screen, height, width);
 		}
 
 		// temporary ducking look: squash the sprite to half height (replace with a real duck frame later)
@@ -1408,7 +1652,7 @@ int main()
 
 		// draw
 		window.clear();
-		display_level(window, lvl, bgTex, bgSprite, blockTexture, blockSprite, ladderTexture, ladderSprite, height, width, cell_size);
+		display_level(window, lvl, bgSprite, tileSprite, height, width, cell_size);
 		draw_enemies(window, enemySprite, current_screen, en_type, en_screen, en_x, en_y, en_dir, en_alive, max_enemies);
 
 		// blink while protected after a hit
@@ -1452,6 +1696,12 @@ int main()
 		delete[] lvl[i];
 	}
 	delete[] lvl;
+
+	for (int i = 0; i < height; i++)
+	{
+		delete[] crumble[i];
+	}
+	delete[] crumble;
 
 	return 0;
 }
