@@ -51,12 +51,12 @@ void load_screen(char** lvl, const int screen, const int height, const int width
 
 	if (screen == 0)
 	{
-		// start platform, a lower beam over a pit, then a step up
+		// start platform, a second girder over a pit, then the edge girder
 		place_platform(lvl, 11, 0, 5, 'G');
 		place_column(lvl, 1, 12, 13, 'P');
 		place_column(lvl, 4, 12, 13, 'P');
-		place_platform(lvl, 12, 8, 11, 'G');
-		place_platform(lvl, 13, 9, 10, 'S');
+		place_platform(lvl, 11, 8, 11, 'G');
+		place_platform(lvl, 12, 9, 10, 'S');
 		place_platform(lvl, 11, 14, 17, 'G');
 	}
 	else if (screen == 1)
@@ -567,14 +567,22 @@ int enemy_width(const int type)
 	{
 		return 48;
 	}
+	if (type == 2)
+	{
+		return 78;
+	}
 	return 40;
 }
 
 int enemy_height(const int type)
 {
-	if (type == 0 || type == 2)
+	if (type == 0)
 	{
 		return 32;
+	}
+	if (type == 2)
+	{
+		return 48;
 	}
 	return 40;
 }
@@ -676,7 +684,7 @@ void spawn_enemies(int en_type[], int en_screen[], float en_x[], float en_y[], f
 		if (en_type[i] == 2)
 		{
 			// a flying insect hovers high: en_vy keeps its base height, en_timer is its bobbing phase
-			en_vy[i] = 480 + random_number(seed, 160);
+			en_vy[i] = 380 + random_number(seed, 180);
 			en_y[i] = en_vy[i];
 			en_timer[i] = random_number(seed, 90);
 			en_ground[i] = false;
@@ -896,7 +904,15 @@ void draw_enemies(RenderWindow& window, Sprite enemySprite[], const int current_
 		if (en_alive[i] && en_screen[i] == current_screen)
 		{
 			int t = en_type[i];
-			if (en_dir[i] > 0)
+
+			// the crawler and the jumper face right, the flying insect picture faces left
+			bool face_right = en_dir[i] > 0;
+			if (t == 2)
+			{
+				face_right = !face_right;
+			}
+
+			if (face_right)
 			{
 				enemySprite[t].setScale(1, 1);
 				enemySprite[t].setPosition(en_x[i], en_y[i]);
@@ -1070,37 +1086,141 @@ void draw_projectiles(RenderWindow& window, Sprite& bulletSprite, Sprite& grenad
 	}
 }
 
-// health bar (top left) and the weapon / ammo text under it
-void draw_hud(RenderWindow& window, Sprite& barBack, Sprite& barFill, Text& hudText, const int health, const int max_health, const int weapon, const int magnum_ammo, const int grenade_ammo, const int score)
+// ---------------------------------------------------------------
+// HUD: the status bar at the bottom of the screen, laid out like the NES game.
+// All pieces (font, icons, weapon boxes, bar segments) come from Data/hud_sheet.png.
+// HUD pixels are drawn 4 times bigger; (x, y) are in HUD pixels from the top left of the bar.
+// ---------------------------------------------------------------
+
+// draws the part (tx, ty, tw, th) of hud_sheet.png at HUD pixel (x, y)
+void draw_hud_piece(RenderWindow& window, Sprite& hud, const int tx, const int ty, const int tw, const int th, const int x, const int y, const float hud_x, const float hud_y)
 {
-	barBack.setPosition(16, 16);
-	barBack.setScale(204, 20);
-	window.draw(barBack);
+	hud.setTextureRect(IntRect(tx, ty, tw, th));
+	hud.setScale(4, 4);
+	hud.setPosition(hud_x + x * 4, hud_y + y * 4);
+	window.draw(hud);
+}
 
-	barFill.setPosition(18, 18);
-	barFill.setScale(200.0 * health / max_health, 16);
-	window.draw(barFill);
+// draws digits, capital letters and '-' (8 HUD pixels per character)
+void draw_hud_text(RenderWindow& window, Sprite& hud, const char text[], const int x, const int y, const float hud_x, const float hud_y)
+{
+	int i = 0;
+	while (text[i] != '\0')
+	{
+		char c = text[i];
+		int tx = -1;
+		int ty = 0;
 
-	char line[80];
-	line[0] = '\0';
-	if (weapon == 1)
-	{
-		append_text(line, "1 Laser Whip   ammo: unlimited");
+		if (c >= '0' && c <= '9')
+		{
+			tx = (c - '0') * 8;
+			ty = 24;
+		}
+		else if (c >= 'A' && c <= 'O')
+		{
+			tx = (c - 'A' + 1) * 8;
+			ty = 32;
+		}
+		else if (c >= 'P' && c <= 'Z')
+		{
+			tx = (c - 'P') * 8;
+			ty = 40;
+		}
+		else if (c == '-')
+		{
+			tx = 88;
+			ty = 24;
+		}
+
+		if (tx >= 0)
+		{
+			draw_hud_piece(window, hud, tx, ty, 8, 8, x + i * 8, y, hud_x, hud_y);
+		}
+		i += 1;
 	}
-	else if (weapon == 2)
+}
+
+// draws a whole number so that its last digit ends at x_end
+void draw_hud_number(RenderWindow& window, Sprite& hud, const int number, const int x_end, const int y, const float hud_x, const float hud_y)
+{
+	char text[12];
+	text[0] = '\0';
+	append_number(text, number);
+
+	int length = 0;
+	while (text[length] != '\0')
 	{
-		append_text(line, "2 .44 Magnum   ammo: ");
-		append_number(line, magnum_ammo);
+		length += 1;
 	}
-	else
+	draw_hud_text(window, hud, text, x_end - length * 8, y, hud_x, hud_y);
+}
+
+// the whole status bar: score, ammo, time, lives, kills, weapon boxes, health bar and stage
+void draw_hud(RenderWindow& window, Sprite& hud, Sprite& hudBack, const int screen_width, const int screen_height, const int weapon, const int magnum_ammo, const int grenade_ammo, const int health, const int max_health, const int time_left, const int lives, const int defeated, const int score)
+{
+	const int strip_height = 28 * 4;
+	float hud_x = (screen_width - 256 * 4) / 2;
+	float hud_y = screen_height - strip_height;
+
+	// black strip along the bottom of the window
+	hudBack.setScale(screen_width, strip_height);
+	hudBack.setPosition(0, hud_y);
+	window.draw(hudBack);
+
+	const int left = 2;
+	const int row1 = 3;
+	const int row2 = 10;
+	const int row3 = 17;
+
+	// row 1: SCORE, first ammo, TIME, lives, defeated enemies
+	draw_hud_text(window, hud, "SCORE", left, row1, hud_x, hud_y);
+	draw_hud_piece(window, hud, 24, 16, 8, 8, left + 56, row1, hud_x, hud_y);
+	draw_hud_number(window, hud, magnum_ammo, left + 80, row1, hud_x, hud_y);
+	draw_hud_text(window, hud, "TIME", left + 88, row1, hud_x, hud_y);
+	draw_hud_number(window, hud, time_left, left + 152, row1, hud_x, hud_y);
+	draw_hud_text(window, hud, "P", left + 160, row1, hud_x, hud_y);
+	draw_hud_number(window, hud, lives, left + 176, row1, hud_x, hud_y);
+	draw_hud_piece(window, hud, 40, 16, 8, 8, left + 192, row1, hud_x, hud_y);
+	draw_hud_number(window, hud, defeated, left + 216, row1, hud_x, hud_y);
+
+	// row 2: the score, second ammo, the three weapon boxes, P + health bar
+	draw_hud_number(window, hud, score, left + 48, row2, hud_x, hud_y);
+	draw_hud_piece(window, hud, 32, 16, 8, 8, left + 56, row2, hud_x, hud_y);
+	draw_hud_number(window, hud, grenade_ammo, left + 80, row2, hud_x, hud_y);
+
+	for (int k = 0; k < 3; k += 1)
 	{
-		append_text(line, "3 Grenades   ammo: ");
-		append_number(line, grenade_ammo);
+		// the chosen weapon uses the orange box (48 pixels further right on the sheet)
+		int tx = k * 16;
+		if (weapon == k + 1)
+		{
+			tx += 48;
+		}
+		draw_hud_piece(window, hud, tx, 112, 16, 16, left + 88 + k * 16, 10, hud_x, hud_y);
 	}
-	append_text(line, "\nScore: ");
-	append_number(line, score);
-	hudText.setString(line);
-	window.draw(hudText);
+
+	draw_hud_text(window, hud, "P", left + 144, row2, hud_x, hud_y);
+
+	// 20 bar segments: full ones are orange, the rest are empty outlines
+	int filled = 0;
+	if (health > 0)
+	{
+		filled = (health * 20 + max_health - 1) / max_health;
+	}
+	for (int i = 0; i < 20; i += 1)
+	{
+		int tx = 80;
+		if (i < filled)
+		{
+			tx = 64;
+		}
+		draw_hud_piece(window, hud, tx, 16, 4, 8, left + 152 + i * 4, row2, hud_x, hud_y);
+	}
+
+	// row 3: STAGE and the (empty) enemy bar label
+	draw_hud_text(window, hud, "STAGE", left, row3, hud_x, hud_y);
+	draw_hud_text(window, hud, "2-1", left + 56, row3, hud_x, hud_y);
+	draw_hud_text(window, hud, "E", left + 144, row3, hud_x, hud_y);
 }
 
 // ---------------------------------------------------------------
@@ -1371,35 +1491,28 @@ int main()
 	Texture bulletTexture;
 	Texture grenadeTexture;
 	Texture whipTexture;
-	Texture barBackTexture;
-	Texture barFillTexture;
+	Texture hudTexture;
+	Texture hudBackTexture;
 	Sprite bulletSprite;
 	Sprite grenadeSprite;
 	Sprite whipSprite;
-	Sprite barBack;
-	Sprite barFill;
-	Font font;
-	Text hudText;
+	Sprite hud;
+	Sprite hudBack;
 
-	if (!bulletTexture.loadFromFile("Data/bullet.png") || !grenadeTexture.loadFromFile("Data/grenade.png") || !whipTexture.loadFromFile("Data/whip.png") || !barBackTexture.loadFromFile("Data/bar_back.png") || !barFillTexture.loadFromFile("Data/bar_fill.png"))
+	if (!bulletTexture.loadFromFile("Data/bullet.png") || !grenadeTexture.loadFromFile("Data/grenade.png") || !whipTexture.loadFromFile("Data/whip.png") || !hudTexture.loadFromFile("Data/hud_sheet.png") || !hudBackTexture.loadFromFile("Data/hud_bg.png"))
 	{
-		cout << "Could not load a weapon or HUD image from Data/ (bullet, grenade, whip, bar_back, bar_fill)" << endl;
-		return 1;
-	}
-	if (!font.loadFromFile("Data/font.ttf"))
-	{
-		cout << "Could not load Data/font.ttf" << endl;
+		cout << "Could not load a weapon or HUD image from Data/ (bullet, grenade, whip, hud_sheet, hud_bg)" << endl;
 		return 1;
 	}
 	bulletSprite.setTexture(bulletTexture);
 	grenadeSprite.setTexture(grenadeTexture);
 	whipSprite.setTexture(whipTexture);
-	barBack.setTexture(barBackTexture);
-	barFill.setTexture(barFillTexture);
-	hudText.setFont(font);
-	hudText.setCharacterSize(22);
-	hudText.setFillColor(Color(188, 190, 0));
-	hudText.setPosition(16, 44);
+	hud.setTexture(hudTexture);
+	hudBack.setTexture(hudBackTexture);
+
+	// the TIME counter of the HUD counts down once per second (60 frames)
+	int time_left = 300;
+	int time_frames = 0;
 
 	// enemies (level 1: 4 crawlers + 5 blue jumpers + 6 flying insects)
 	const int num_crawlers = 4;
@@ -1610,11 +1723,28 @@ int main()
 			health += 1;
 		}
 
+		// the TIME counter: 1 per second, running out of time is death
+		time_frames += 1;
+		if (time_frames >= 60)
+		{
+			time_frames = 0;
+			if (time_left > 0)
+			{
+				time_left -= 1;
+			}
+		}
+		if (time_left <= 0)
+		{
+			health = 0;
+		}
+
 		// dying: respawn at the start of the level (temporary, a proper game over comes later)
 		if (health <= 0)
 		{
 			deaths += 1;
 			health = max_health;
+			time_left = 300;
+			time_frames = 0;
 			player_x = 100;
 			player_y = 500;
 			velocityY = 0;
@@ -1685,7 +1815,21 @@ int main()
 		}
 
 		draw_projectiles(window, bulletSprite, grenadeSprite, bullet_x, bullet_y, bullet_active, max_bullets, grenade_x, grenade_y, grenade_active, max_grenades);
-		draw_hud(window, barBack, barFill, hudText, health, max_health, weapon, magnum_ammo, grenade_ammo, score);
+		// lives left (3 at the start) and how many enemies are defeated
+		int lives = 3 - deaths;
+		if (lives < 0)
+		{
+			lives = 0;
+		}
+		int defeated = 0;
+		for (int i = 0; i < max_enemies; i += 1)
+		{
+			if (!en_alive[i])
+			{
+				defeated += 1;
+			}
+		}
+		draw_hud(window, hud, hudBack, screen_x, screen_y, weapon, magnum_ammo, grenade_ammo, health, max_health, time_left, lives, defeated, score);
 		window.display();
 	}
 
