@@ -26,20 +26,11 @@ void place_platform(char** lvl, const int row, const int c1, const int c2, const
 	}
 }
 
-// puts the tile character ch in column `col` from row r1 (top) down to row r2
-// (ladders use 'H'; the top ladder cell should be level with the platform it leads to)
-void place_column(char** lvl, const int col, const int r1, const int r2, const char ch)
-{
-	for (int i = r1; i <= r2; i += 1)
-	{
-		lvl[i][col] = ch;
-	}
-}
-
-// builds one screen of level 1: girders floating over pits, as in the game video.
-// every screen has girders at the left and right edges (row 11) so crossing between screens is always safe.
-// tiles: G girder, C crumbling girder, S hazard girder, P decoration pillar, H ladder, E exit
-void load_screen(char** lvl, const int screen, const int height, const int width)
+// builds one screen of a level. Tile characters:
+// # G V C S B M R solid (G girder, C crumbling girder, S hazard girder, B container, M mesh, R rock)
+// H ladder, Y breakable vine, Z swing vine, P pillar (decoration), W water, F waterfall (decoration), E exit
+// every screen has solid ground on row 11 at both edges, so crossing between screens is always safe.
+void load_screen(char** lvl, const int level, const int screen, const int height, const int width)
 {
 	for (int i = 0; i < height; i += 1)
 	{
@@ -48,58 +39,232 @@ void load_screen(char** lvl, const int screen, const int height, const int width
 			lvl[i][j] = ' ';
 		}
 	}
-
-	if (screen == 0)
+	if (level == 1)
 	{
-		// start platform, a second girder over a pit, then the edge girder
-		place_platform(lvl, 11, 0, 5, 'G');
-		place_column(lvl, 1, 12, 13, 'P');
-		place_column(lvl, 4, 12, 13, 'P');
-		place_platform(lvl, 11, 8, 11, 'G');
-		place_platform(lvl, 12, 9, 10, 'S');
-		place_platform(lvl, 11, 14, 17, 'G');
+		// Level 1 - Construction Site
+		if (screen == 0)
+		{
+			place_platform(lvl, 11, 0, 5, 'G');
+			place_platform(lvl, 11, 8, 11, 'G');
+			place_platform(lvl, 11, 14, 17, 'G');
+			place_platform(lvl, 12, 1, 1, 'P');
+			place_platform(lvl, 12, 4, 4, 'P');
+			place_platform(lvl, 12, 9, 10, 'S');
+			place_platform(lvl, 13, 1, 1, 'P');
+			place_platform(lvl, 13, 4, 4, 'P');
+		}
+		else if (screen == 1)
+		{
+			place_platform(lvl, 8, 11, 14, 'G');
+			place_platform(lvl, 10, 6, 9, 'G');
+			place_platform(lvl, 11, 0, 3, 'G');
+			place_platform(lvl, 11, 7, 7, 'P');
+			place_platform(lvl, 11, 9, 9, 'P');
+			place_platform(lvl, 11, 15, 17, 'G');
+			place_platform(lvl, 12, 7, 7, 'P');
+			place_platform(lvl, 12, 9, 9, 'P');
+			place_platform(lvl, 13, 7, 7, 'P');
+			place_platform(lvl, 13, 9, 9, 'P');
+		}
+		else if (screen == 2)
+		{
+			place_platform(lvl, 9, 12, 14, 'G');
+			place_platform(lvl, 11, 0, 2, 'G');
+			place_platform(lvl, 11, 3, 6, 'C');
+			place_platform(lvl, 11, 7, 10, 'G');
+			place_platform(lvl, 11, 15, 17, 'G');
+			place_platform(lvl, 12, 8, 8, 'P');
+			place_platform(lvl, 13, 8, 8, 'P');
+		}
+		else if (screen == 3)
+		{
+			place_platform(lvl, 4, 13, 13, 'E');
+			place_platform(lvl, 5, 8, 8, 'H');
+			place_platform(lvl, 5, 9, 14, 'G');
+			place_platform(lvl, 6, 8, 8, 'H');
+			place_platform(lvl, 7, 8, 8, 'H');
+			place_platform(lvl, 8, 8, 8, 'H');
+			place_platform(lvl, 9, 8, 8, 'H');
+			place_platform(lvl, 10, 8, 8, 'H');
+			place_platform(lvl, 11, 0, 9, 'G');
+			place_platform(lvl, 12, 2, 2, 'P');
+			place_platform(lvl, 12, 6, 6, 'P');
+			place_platform(lvl, 13, 2, 2, 'P');
+			place_platform(lvl, 13, 6, 6, 'P');
+		}
 	}
-	else if (screen == 1)
+	else if (level == 2)
 	{
-		// stepping girders over pits
-		place_platform(lvl, 11, 0, 3, 'G');
-		place_platform(lvl, 10, 6, 9, 'G');
-		place_column(lvl, 7, 11, 13, 'P');
-		place_column(lvl, 9, 11, 13, 'P');
-		place_platform(lvl, 8, 11, 14, 'G');
-		place_platform(lvl, 11, 15, 17, 'G');
+		// Level 2 - Ricardo Port
+		if (screen == 0)
+		{
+			place_platform(lvl, 5, 12, 12, 'H');
+			place_platform(lvl, 5, 13, 15, 'M');
+			place_platform(lvl, 6, 12, 12, 'H');
+			place_platform(lvl, 7, 2, 2, 'H');
+			place_platform(lvl, 7, 3, 6, 'M');
+			place_platform(lvl, 7, 12, 12, 'H');
+			place_platform(lvl, 8, 2, 2, 'H');
+			place_platform(lvl, 8, 12, 12, 'H');
+			place_platform(lvl, 9, 2, 2, 'H');
+			place_platform(lvl, 9, 9, 11, 'B');
+			place_platform(lvl, 9, 12, 12, 'H');
+			place_platform(lvl, 10, 2, 2, 'H');
+			place_platform(lvl, 10, 9, 11, 'B');
+			place_platform(lvl, 10, 12, 12, 'H');
+			place_platform(lvl, 11, 0, 17, 'M');
+		}
+		else if (screen == 1)
+		{
+			place_platform(lvl, 8, 6, 9, 'M');
+			place_platform(lvl, 8, 10, 10, 'H');
+			place_platform(lvl, 9, 10, 10, 'H');
+			place_platform(lvl, 9, 12, 14, 'B');
+			place_platform(lvl, 10, 3, 5, 'B');
+			place_platform(lvl, 10, 10, 10, 'H');
+			place_platform(lvl, 10, 12, 14, 'B');
+			place_platform(lvl, 11, 0, 17, 'M');
+		}
+		else if (screen == 2)
+		{
+			place_platform(lvl, 7, 5, 5, 'H');
+			place_platform(lvl, 7, 6, 10, 'M');
+			place_platform(lvl, 8, 5, 5, 'H');
+			place_platform(lvl, 9, 2, 4, 'B');
+			place_platform(lvl, 9, 5, 5, 'H');
+			place_platform(lvl, 10, 2, 4, 'B');
+			place_platform(lvl, 10, 5, 5, 'H');
+			place_platform(lvl, 10, 12, 15, 'B');
+			place_platform(lvl, 11, 0, 17, 'M');
+		}
+		else if (screen == 3)
+		{
+			place_platform(lvl, 5, 9, 9, 'H');
+			place_platform(lvl, 5, 10, 14, 'M');
+			place_platform(lvl, 6, 9, 9, 'H');
+			place_platform(lvl, 7, 9, 9, 'H');
+			place_platform(lvl, 8, 2, 2, 'H');
+			place_platform(lvl, 8, 3, 7, 'M');
+			place_platform(lvl, 8, 9, 9, 'H');
+			place_platform(lvl, 9, 2, 2, 'H');
+			place_platform(lvl, 9, 9, 9, 'H');
+			place_platform(lvl, 10, 2, 2, 'H');
+			place_platform(lvl, 10, 9, 9, 'H');
+			place_platform(lvl, 11, 0, 17, 'M');
+		}
+		else if (screen == 4)
+		{
+			place_platform(lvl, 6, 11, 11, 'E');
+			place_platform(lvl, 7, 7, 7, 'H');
+			place_platform(lvl, 7, 8, 12, 'M');
+			place_platform(lvl, 8, 7, 7, 'H');
+			place_platform(lvl, 9, 4, 6, 'B');
+			place_platform(lvl, 9, 7, 7, 'H');
+			place_platform(lvl, 10, 4, 6, 'B');
+			place_platform(lvl, 10, 7, 7, 'H');
+			place_platform(lvl, 11, 0, 17, 'M');
+		}
 	}
-	else if (screen == 2)
+	else if (level == 3)
 	{
-		// a bridge of crumbling girders
-		place_platform(lvl, 11, 0, 2, 'G');
-		place_platform(lvl, 11, 3, 6, 'C');
-		place_platform(lvl, 11, 7, 10, 'G');
-		place_column(lvl, 8, 12, 13, 'P');
-		place_platform(lvl, 9, 12, 14, 'G');
-		place_platform(lvl, 11, 15, 17, 'G');
-	}
-	else if (screen == 3)
-	{
-		// a long girder, then a ladder up to the exit
-		place_platform(lvl, 11, 0, 9, 'G');
-		place_column(lvl, 2, 12, 13, 'P');
-		place_column(lvl, 6, 12, 13, 'P');
-		place_column(lvl, 8, 5, 10, 'H');
-		place_platform(lvl, 5, 9, 14, 'G');
-		lvl[4][13] = 'E';
+		// Level 3 - Cliffs, Waterfalls and Jungle
+		if (screen == 0)
+		{
+			place_platform(lvl, 0, 9, 10, 'F');
+			place_platform(lvl, 1, 9, 10, 'F');
+			place_platform(lvl, 2, 9, 10, 'F');
+			place_platform(lvl, 3, 9, 10, 'F');
+			place_platform(lvl, 4, 9, 10, 'F');
+			place_platform(lvl, 5, 9, 10, 'F');
+			place_platform(lvl, 6, 9, 10, 'F');
+			place_platform(lvl, 7, 9, 10, 'F');
+			place_platform(lvl, 8, 8, 9, 'R');
+			place_platform(lvl, 9, 5, 6, 'R');
+			place_platform(lvl, 9, 11, 12, 'R');
+			place_platform(lvl, 11, 0, 3, 'R');
+			place_platform(lvl, 11, 4, 13, 'W');
+			place_platform(lvl, 11, 14, 17, 'R');
+			place_platform(lvl, 12, 4, 13, 'W');
+			place_platform(lvl, 13, 4, 13, 'W');
+		}
+		else if (screen == 1)
+		{
+			place_platform(lvl, 0, 13, 13, 'Z');
+			place_platform(lvl, 1, 13, 13, 'Z');
+			place_platform(lvl, 2, 13, 13, 'Z');
+			place_platform(lvl, 3, 13, 13, 'Z');
+			place_platform(lvl, 4, 7, 7, 'Y');
+			place_platform(lvl, 4, 8, 11, 'R');
+			place_platform(lvl, 4, 15, 15, 'R');
+			place_platform(lvl, 5, 7, 7, 'Y');
+			place_platform(lvl, 6, 7, 7, 'Y');
+			place_platform(lvl, 7, 7, 7, 'Y');
+			place_platform(lvl, 8, 3, 6, 'R');
+			place_platform(lvl, 8, 7, 7, 'Y');
+			place_platform(lvl, 9, 7, 7, 'Y');
+			place_platform(lvl, 10, 7, 7, 'Y');
+			place_platform(lvl, 11, 0, 17, 'R');
+		}
+		else if (screen == 2)
+		{
+			place_platform(lvl, 7, 7, 7, 'Y');
+			place_platform(lvl, 7, 8, 11, 'R');
+			place_platform(lvl, 8, 7, 7, 'Y');
+			place_platform(lvl, 9, 3, 5, 'R');
+			place_platform(lvl, 9, 7, 7, 'Y');
+			place_platform(lvl, 9, 13, 15, 'R');
+			place_platform(lvl, 10, 3, 5, 'R');
+			place_platform(lvl, 10, 7, 7, 'Y');
+			place_platform(lvl, 10, 13, 15, 'R');
+			place_platform(lvl, 11, 0, 17, 'R');
+		}
+		else if (screen == 3)
+		{
+			place_platform(lvl, 9, 7, 8, 'R');
+			place_platform(lvl, 9, 10, 11, 'R');
+			place_platform(lvl, 11, 0, 5, 'R');
+			place_platform(lvl, 11, 6, 11, 'W');
+			place_platform(lvl, 11, 12, 17, 'R');
+			place_platform(lvl, 12, 6, 11, 'W');
+			place_platform(lvl, 13, 6, 11, 'W');
+		}
+		else if (screen == 4)
+		{
+			place_platform(lvl, 2, 7, 7, 'Z');
+			place_platform(lvl, 3, 7, 7, 'Z');
+			place_platform(lvl, 4, 7, 7, 'Z');
+			place_platform(lvl, 5, 7, 7, 'Z');
+			place_platform(lvl, 6, 1, 5, 'R');
+			place_platform(lvl, 6, 6, 6, 'Y');
+			place_platform(lvl, 6, 9, 13, 'R');
+			place_platform(lvl, 7, 6, 6, 'Y');
+			place_platform(lvl, 8, 6, 6, 'Y');
+			place_platform(lvl, 9, 6, 6, 'Y');
+			place_platform(lvl, 10, 6, 6, 'Y');
+			place_platform(lvl, 11, 0, 17, 'R');
+		}
+		else if (screen == 5)
+		{
+			place_platform(lvl, 7, 6, 6, 'E');
+			place_platform(lvl, 8, 4, 8, 'R');
+			place_platform(lvl, 8, 9, 9, 'Y');
+			place_platform(lvl, 9, 9, 9, 'Y');
+			place_platform(lvl, 10, 9, 9, 'Y');
+			place_platform(lvl, 11, 0, 17, 'R');
+		}
 	}
 }
 
-// loads a screen and clears the crumbling-girder timers
-void enter_screen(char** lvl, int** crumble, const int screen, const int height, const int width)
+// loads a screen and clears the timers of the crumbling girders and of the breakable vines
+void enter_screen(char** lvl, int** crumble, int** vine, const int level, const int screen, const int height, const int width)
 {
-	load_screen(lvl, screen, height, width);
+	load_screen(lvl, level, screen, height, width);
 	for (int i = 0; i < height; i += 1)
 	{
 		for (int j = 0; j < width; j += 1)
 		{
 			crumble[i][j] = 0;
+			vine[i][j] = 0;
 		}
 	}
 }
@@ -175,7 +340,8 @@ bool is_ladder(char** lvl, const float x, const float y, const int height, const
 	{
 		return false;
 	}
-	return lvl[(int)y / cell_size][(int)x / cell_size] == 'H';
+	char c = lvl[(int)y / cell_size][(int)x / cell_size];
+	return c == 'H' || c == 'Y';
 }
 
 // true if a falling player can stand on this point:
@@ -558,12 +724,13 @@ void update_crumbling(char** lvl, int** crumble, const float player_x, const flo
 // ---------------------------------------------------------------
 // ENEMIES
 // every enemy lives in a set of parallel arrays (index i = one enemy)
-// type 0 = spiked crawler, type 1 = blue jumper, type 2 = flying insect
+// type 0 = spiked crawler, 1 = blue jumper, 2 = flying insect, 3 = leopard,
+// 4 = green shooter, 5 = tribal warrior, 6 = leaping fish
 // ---------------------------------------------------------------
 
 int enemy_width(const int type)
 {
-	if (type == 0)
+	if (type == 0 || type == 5)
 	{
 		return 48;
 	}
@@ -571,12 +738,20 @@ int enemy_width(const int type)
 	{
 		return 78;
 	}
+	if (type == 3)
+	{
+		return 64;
+	}
+	if (type == 6)
+	{
+		return 32;
+	}
 	return 40;
 }
 
 int enemy_height(const int type)
 {
-	if (type == 0)
+	if (type == 0 || type == 3)
 	{
 		return 32;
 	}
@@ -584,16 +759,43 @@ int enemy_height(const int type)
 	{
 		return 48;
 	}
+	if (type == 4)
+	{
+		return 56;
+	}
+	if (type == 5)
+	{
+		return 88;
+	}
 	return 40;
 }
 
+// points for killing an enemy
 int enemy_points(const int type)
 {
 	if (type == 0)
 	{
 		return 50;
 	}
-	return 75;
+	if (type == 1 || type == 2)
+	{
+		return 75;
+	}
+	if (type == 5)
+	{
+		return 125;
+	}
+	return 100;
+}
+
+// damage an enemy does when the player touches it
+int enemy_damage(const int type)
+{
+	if (type == 3 || type == 5 || type == 6)
+	{
+		return 15;
+	}
+	return 10;
 }
 
 // true if two rectangles overlap
@@ -602,100 +804,288 @@ bool rects_overlap(const float ax, const float ay, const float aw, const float a
 	return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 }
 
-// creates the level 1 enemies: 4 crawlers (indexes 0-3) then 5 blue jumpers (indexes 4-8).
-// each gets a random screen and a random spot on the floor of that screen.
-void spawn_enemies(int en_type[], int en_screen[], float en_x[], float en_y[], float en_vx[], float en_vy[], int en_dir[], int en_health[], bool en_alive[], bool en_ground[], int en_timer[], long long& seed, const int max_enemies, const int num_crawlers, const int num_jumpers, const int total_screens, const int screen_width, char** temp_lvl, const int height, const int width, const int cell_size)
+// creates the enemies of a level. returns how many were created.
+// level 1: 4 crawlers, 5 jumpers, 6 insects
+// level 2: 10 leopards, 4 shooters, 8 tribal warriors
+// level 3: 10 fish, 8 tribal warriors, 10 leopards, 7 insects, 5 jumpers
+// crawlers, jumpers, leopards and tribal warriors are put on a random girder, insects fly at a random height,
+// shooters and fish have fixed places.
+int spawn_enemies(const int level, int en_type[], int en_screen[], float en_x[], float en_y[], float en_vx[], float en_vy[], int en_dir[], int en_health[], bool en_alive[], bool en_ground[], int en_timer[], long long& seed, const int max_enemies, const int total_screens, const int screen_width, char** temp_lvl, const int height, const int width, const int cell_size)
 {
+	int count[7] = { 0, 0, 0, 0, 0, 0, 0 };
+	if (level == 1)
+	{
+		count[0] = 4;
+		count[1] = 5;
+		count[2] = 6;
+	}
+	else if (level == 2)
+	{
+		count[3] = 10;
+		count[4] = 4;
+		count[5] = 8;
+	}
+	else
+	{
+		count[6] = 10;
+		count[5] = 8;
+		count[3] = 10;
+		count[2] = 7;
+		count[1] = 5;
+	}
+
+	// fixed places: level 2 shooters (screen, column, girder row) and level 3 fish (screen, water column)
+	const int shooter_screen[4] = { 1, 2, 3, 4 };
+	const int shooter_col[4] = { 8, 9, 13, 9 };
+	const int shooter_row[4] = { 8, 7, 5, 7 };
+	const int fish_screen[10] = { 0, 0, 0, 0, 0, 3, 3, 3, 3, 3 };
+	const int fish_col[10] = { 5, 7, 9, 11, 12, 6, 7, 9, 10, 11 };
+
 	for (int i = 0; i < max_enemies; i += 1)
 	{
-		if (i < num_crawlers)
-		{
-			en_type[i] = 0;
-		}
-		else if (i < num_crawlers + num_jumpers)
-		{
-			en_type[i] = 1;
-		}
-		else
-		{
-			en_type[i] = 2;
-		}
-
-		// insects get a random screen and x; crawlers and jumpers are put on a random girder
-		en_screen[i] = random_number(seed, total_screens);
-		en_x[i] = 200 + random_number(seed, screen_width - 400);
+		en_alive[i] = false;
+		en_screen[i] = -1;
+		en_type[i] = 0;
+		en_x[i] = 0;
 		en_y[i] = 0;
+		en_vx[i] = 0;
+		en_vy[i] = 0;
+		en_dir[i] = 1;
+		en_health[i] = 10;
+		en_ground[i] = true;
+		en_timer[i] = 0;
+	}
 
-		if (en_type[i] != 2)
+	int n = 0;
+	int shooters = 0;
+	int fish = 0;
+
+	for (int type = 0; type < 7; type += 1)
+	{
+		for (int k = 0; k < count[type] && n < max_enemies; k += 1)
 		{
-			int w = enemy_width(en_type[i]);
-			int h = enemy_height(en_type[i]);
-			bool found = false;
+			int i = n;
+			n += 1;
 
-			for (int attempt = 0; attempt < 80 && !found; attempt += 1)
+			int w = enemy_width(type);
+			int h = enemy_height(type);
+
+			en_type[i] = type;
+			en_alive[i] = true;
+			en_ground[i] = true;
+			en_health[i] = 10;
+			if (type == 5)
 			{
-				int screen = random_number(seed, total_screens);
-				int col = 2 + random_number(seed, width - 4);
+				en_health[i] = 20;
+			}
+			if (random_number(seed, 2) == 0)
+			{
+				en_dir[i] = 1;
+			}
+			else
+			{
+				en_dir[i] = -1;
+			}
+			en_timer[i] = 40 + random_number(seed, 40);
 
-				// not on the start platform, so nothing spawns on top of the player
-				if (screen == 0 && col < 6)
+			if (type == 2)
+			{
+				// flying insect: random screen and x; en_vy keeps its base height, en_timer is its bobbing phase
+				en_screen[i] = random_number(seed, total_screens);
+				en_x[i] = 200 + random_number(seed, screen_width - 400);
+				en_vy[i] = 380 + random_number(seed, 180);
+				en_y[i] = en_vy[i];
+				en_timer[i] = random_number(seed, 90);
+				en_ground[i] = false;
+			}
+			else if (type == 4)
+			{
+				// green shooter: stands on a fixed girder
+				int s = shooters % 4;
+				shooters += 1;
+				en_screen[i] = shooter_screen[s];
+				en_x[i] = shooter_col[s] * cell_size + (cell_size - w) / 2;
+				en_y[i] = shooter_row[s] * cell_size - h;
+				en_timer[i] = 60 + random_number(seed, 60);
+			}
+			else if (type == 6)
+			{
+				// leaping fish: waits under the water, hidden by the status bar (y = 790)
+				int f = fish % 10;
+				fish += 1;
+				en_screen[i] = fish_screen[f];
+				en_x[i] = fish_col[f] * cell_size + (cell_size - w) / 2;
+				en_y[i] = 790;
+				en_timer[i] = 40 + random_number(seed, 120);
+			}
+			else
+			{
+				// ground enemy: a random girder
+				bool found = false;
+				for (int attempt = 0; attempt < 120 && !found; attempt += 1)
 				{
-					continue;
-				}
+					int screen = random_number(seed, total_screens);
+					int col = 2 + random_number(seed, width - 4);
 
-				load_screen(temp_lvl, screen, height, width);
-
-				// the first solid, non-crumbling cell in this column with free space above it
-				for (int row = 2; row < height && !found; row += 1)
-				{
-					if (is_solid_char(temp_lvl[row][col]) && temp_lvl[row][col] != 'C' && temp_lvl[row - 1][col] == ' ' && temp_lvl[row - 2][col] == ' ')
+					// not on the start platform, so nothing spawns on top of the player
+					if (screen == 0 && col < 6)
 					{
+						continue;
+					}
+
+					load_screen(temp_lvl, level, screen, height, width);
+
+					// every solid, non-crumbling cell in this column that has free space above it
+					int candidates[14];
+					int number = 0;
+					for (int row = 2; row < height; row += 1)
+					{
+						if (is_solid_char(temp_lvl[row][col]) && temp_lvl[row][col] != 'C' && temp_lvl[row - 1][col] == ' ' && temp_lvl[row - 2][col] == ' ')
+						{
+							candidates[number] = row;
+							number += 1;
+						}
+					}
+
+					if (number > 0)
+					{
+						int row = candidates[random_number(seed, number)];
 						found = true;
 						en_screen[i] = screen;
 						en_x[i] = col * cell_size + (cell_size - w) / 2;
 						en_y[i] = row * cell_size - h;
 					}
 				}
-			}
 
-			if (!found)
-			{
-				// fallback: the long girder of screen 3
-				en_screen[i] = 3;
-				en_x[i] = 5 * cell_size;
-				en_y[i] = 11 * cell_size - h;
+				if (!found)
+				{
+					// fallback: a spot on the last screen of the level
+					en_screen[i] = total_screens - 1;
+					en_x[i] = 5 * cell_size;
+					en_y[i] = 11 * cell_size - h;
+				}
 			}
 		}
-		en_vx[i] = 0;
-		en_vy[i] = 0;
-		if (random_number(seed, 2) == 0)
+	}
+
+	return n;
+}
+
+// moves a ground enemy sideways along its girder.
+// returns 0 = moved, 1 = blocked by a wall, a ledge or the screen edge, 2 = the girder under it is gone (it falls)
+int walk_enemy(char** lvl, const int i, float en_x[], float en_y[], int en_dir[], bool en_alive[], const int w, const int h, const float speed, const int screen_width, const int height, const int width, const int cell_size)
+{
+	bool supported = is_solid(lvl, en_x[i] + 4, en_y[i] + h + 1, height, width, cell_size) || is_solid(lvl, en_x[i] + w - 5, en_y[i] + h + 1, height, width, cell_size);
+	if (!supported)
+	{
+		en_y[i] += 6;
+		if (en_y[i] + h >= height * cell_size - 1)
 		{
-			en_dir[i] = 1;
+			en_alive[i] = false;
+		}
+		return 2;
+	}
+
+	float new_x = en_x[i] + en_dir[i] * speed;
+
+	// x of the edge we are walking toward
+	float lead_x = new_x;
+	if (en_dir[i] > 0)
+	{
+		lead_x = new_x + w - 1;
+	}
+
+	bool wall = is_solid(lvl, lead_x, en_y[i] + h / 2, height, width, cell_size);
+	bool ledge = !is_solid(lvl, lead_x, en_y[i] + h + 1, height, width, cell_size);
+	bool edge = new_x < 0 || new_x > screen_width - w;
+
+	if (wall || ledge || edge)
+	{
+		return 1;
+	}
+	en_x[i] = new_x;
+	return 0;
+}
+
+// gravity and sideways movement in the air for jumpers and leaping leopards:
+// they land on girders, bump into walls and ceilings, and disappear in a pit
+void enemy_physics(char** lvl, const int i, float en_x[], float en_y[], float en_vx[], float en_vy[], bool en_alive[], bool en_ground[], const int w, const int h, const float gravity, const int screen_width, const int height, const int width, const int cell_size)
+{
+	// horizontal movement (only while in the air)
+	if (en_vx[i] != 0)
+	{
+		float new_x = en_x[i] + en_vx[i];
+		float lead_x = new_x;
+		if (en_vx[i] > 0)
+		{
+			lead_x = new_x + w - 1;
+		}
+
+		if (new_x < 0 || new_x > screen_width - w || is_solid(lvl, lead_x, en_y[i] + 2, height, width, cell_size) || is_solid(lvl, lead_x, en_y[i] + h - 2, height, width, cell_size))
+		{
+			en_vx[i] = 0;
 		}
 		else
 		{
-			en_dir[i] = -1;
+			en_x[i] = new_x;
 		}
-		en_health[i] = 10;
-		en_alive[i] = true;
-		en_ground[i] = true;
-		en_timer[i] = 40 + random_number(seed, 40);
+	}
 
-		if (en_type[i] == 2)
+	// vertical movement with gravity
+	en_vy[i] += gravity;
+	if (en_vy[i] > 16)
+	{
+		en_vy[i] = 16;
+	}
+	float new_y = en_y[i] + en_vy[i];
+
+	if (en_vy[i] >= 0)
+	{
+		float feet_y = new_y + h;
+		if (is_solid(lvl, en_x[i] + 2, feet_y, height, width, cell_size) || is_solid(lvl, en_x[i] + w - 3, feet_y, height, width, cell_size))
 		{
-			// a flying insect hovers high: en_vy keeps its base height, en_timer is its bobbing phase
-			en_vy[i] = 380 + random_number(seed, 180);
-			en_y[i] = en_vy[i];
-			en_timer[i] = random_number(seed, 90);
+			// landed: stand on the block and stop moving sideways
+			int row = (int)feet_y / cell_size;
+			en_y[i] = row * cell_size - h;
+			en_vy[i] = 0;
+			en_vx[i] = 0;
+			en_ground[i] = true;
+		}
+		else
+		{
+			en_y[i] = new_y;
 			en_ground[i] = false;
 		}
+	}
+	else
+	{
+		en_ground[i] = false;
+		if (new_y < 0 || is_solid(lvl, en_x[i] + 2, new_y, height, width, cell_size) || is_solid(lvl, en_x[i] + w - 3, new_y, height, width, cell_size))
+		{
+			en_vy[i] = 0;
+		}
+		else
+		{
+			en_y[i] = new_y;
+		}
+	}
+
+	// falling into a pit removes the enemy
+	if (en_y[i] + h >= height * cell_size - 1)
+	{
+		en_alive[i] = false;
 	}
 }
 
 // moves the enemies that are on the current screen
-// crawler: walks along the floor and turns at walls and ledges
-// blue jumper: waits on the ground, then hops toward the player
-void update_enemies(char** lvl, const int current_screen, const float player_x, int en_type[], int en_screen[], float en_x[], float en_y[], float en_vx[], float en_vy[], int en_dir[], bool en_alive[], bool en_ground[], int en_timer[], long long& seed, const int max_enemies, const float gravity, const int screen_width, const int height, const int width, const int cell_size)
+// crawler: walks along its girder and turns at walls and ledges
+// blue jumper: waits, then hops toward the player
+// flying insect: flies sideways and bobs up and down
+// leopard: patrols, sprints when the player is near on the same level, then leaps
+// green shooter: stands still and turns toward the player (its shots are made by enemy_fire)
+// tribal warrior: patrols and charges at the player when he is near on the same level
+// leaping fish: waits under the water, then jumps out
+void update_enemies(char** lvl, const int current_screen, const float player_x, const float player_y, const int Pheight, int en_type[], int en_screen[], float en_x[], float en_y[], float en_vx[], float en_vy[], int en_dir[], bool en_alive[], bool en_ground[], int en_timer[], long long& seed, const int max_enemies, const float gravity, const int screen_width, const int height, const int width, const int cell_size)
 {
 	for (int i = 0; i < max_enemies; i += 1)
 	{
@@ -704,129 +1094,45 @@ void update_enemies(char** lvl, const int current_screen, const float player_x, 
 			continue;
 		}
 
-		int w = enemy_width(en_type[i]);
-		int h = enemy_height(en_type[i]);
+		int type = en_type[i];
+		int w = enemy_width(type);
+		int h = enemy_height(type);
 
-		if (en_type[i] == 0)
+		float dx = player_x - en_x[i];
+		int toward = 1;
+		if (dx < 0)
+		{
+			toward = -1;
+			dx = -dx;
+		}
+		// is the player standing at about the same height as this enemy?
+		float level_gap = (player_y + Pheight) - (en_y[i] + h);
+		if (level_gap < 0)
+		{
+			level_gap = -level_gap;
+		}
+		bool same_level = level_gap < 40;
+
+		if (type == 0)
 		{
 			// ---- spiked crawler ----
-			// if the girder under it crumbled, it falls into the pit
-			bool supported = is_solid(lvl, en_x[i] + 4, en_y[i] + h + 1, height, width, cell_size) || is_solid(lvl, en_x[i] + w - 5, en_y[i] + h + 1, height, width, cell_size);
-			if (!supported)
-			{
-				en_y[i] += 6;
-				if (en_y[i] + h >= height * cell_size - 1)
-				{
-					en_alive[i] = false;
-				}
-				continue;
-			}
-
-			float new_x = en_x[i] + en_dir[i] * 2;
-
-			// x of the edge we are walking toward
-			float lead_x = new_x;
-			if (en_dir[i] > 0)
-			{
-				lead_x = new_x + w - 1;
-			}
-
-			bool wall = is_solid(lvl, lead_x, en_y[i] + h / 2, height, width, cell_size);
-			bool ledge = !is_solid(lvl, lead_x, en_y[i] + h + 1, height, width, cell_size);
-			bool edge = new_x < 0 || new_x > screen_width - w;
-
-			if (wall || ledge || edge)
+			if (walk_enemy(lvl, i, en_x, en_y, en_dir, en_alive, w, h, 2, screen_width, height, width, cell_size) == 1)
 			{
 				en_dir[i] = -en_dir[i];
 			}
-			else
-			{
-				en_x[i] = new_x;
-			}
 		}
-		else if (en_type[i] == 1)
+		else if (type == 1)
 		{
 			// ---- blue jumper ----
-
-			// horizontal movement (only while in the air)
-			if (en_vx[i] != 0)
-			{
-				float new_x = en_x[i] + en_vx[i];
-				float lead_x = new_x;
-				if (en_vx[i] > 0)
-				{
-					lead_x = new_x + w - 1;
-				}
-
-				if (new_x < 0 || new_x > screen_width - w || is_solid(lvl, lead_x, en_y[i] + 2, height, width, cell_size) || is_solid(lvl, lead_x, en_y[i] + h - 2, height, width, cell_size))
-				{
-					en_vx[i] = 0;
-				}
-				else
-				{
-					en_x[i] = new_x;
-				}
-			}
-
-			// vertical movement with gravity
-			en_vy[i] += gravity;
-			if (en_vy[i] > 16)
-			{
-				en_vy[i] = 16;
-			}
-			float new_y = en_y[i] + en_vy[i];
-
-			if (en_vy[i] >= 0)
-			{
-				float feet_y = new_y + h;
-				if (is_solid(lvl, en_x[i] + 2, feet_y, height, width, cell_size) || is_solid(lvl, en_x[i] + w - 3, feet_y, height, width, cell_size))
-				{
-					// landed: stand on the block and stop moving sideways
-					int row = (int)feet_y / cell_size;
-					en_y[i] = row * cell_size - h;
-					en_vy[i] = 0;
-					en_vx[i] = 0;
-					en_ground[i] = true;
-				}
-				else
-				{
-					en_y[i] = new_y;
-					en_ground[i] = false;
-				}
-			}
-			else
-			{
-				en_ground[i] = false;
-				if (new_y < 0 || is_solid(lvl, en_x[i] + 2, new_y, height, width, cell_size) || is_solid(lvl, en_x[i] + w - 3, new_y, height, width, cell_size))
-				{
-					en_vy[i] = 0;
-				}
-				else
-				{
-					en_y[i] = new_y;
-				}
-			}
-
-			// a jumper that falls into a pit is gone
-			if (en_y[i] + h >= height * cell_size - 1)
-			{
-				en_alive[i] = false;
-			}
+			enemy_physics(lvl, i, en_x, en_y, en_vx, en_vy, en_alive, en_ground, w, h, gravity, screen_width, height, width, cell_size);
 
 			// on the ground: count down, then jump toward the player
-			if (en_ground[i])
+			if (en_alive[i] && en_ground[i])
 			{
 				en_timer[i] -= 1;
 				if (en_timer[i] <= 0)
 				{
-					if (player_x > en_x[i])
-					{
-						en_dir[i] = 1;
-					}
-					else
-					{
-						en_dir[i] = -1;
-					}
+					en_dir[i] = toward;
 					en_vx[i] = en_dir[i] * 3.5;
 					en_vy[i] = -13;
 					en_ground[i] = false;
@@ -834,7 +1140,7 @@ void update_enemies(char** lvl, const int current_screen, const float player_x, 
 				}
 			}
 		}
-		else
+		else if (type == 2)
 		{
 			// ---- flying insect ----
 			// flies sideways at 2 pixels per frame and turns at the screen edges,
@@ -851,6 +1157,96 @@ void update_enemies(char** lvl, const int current_screen, const float player_x, 
 
 			en_timer[i] += 1;
 			en_y[i] = en_vy[i] + 40 * sin(en_timer[i] * 6.2832 / 90);
+		}
+		else if (type == 3)
+		{
+			// ---- leopard ----
+			enemy_physics(lvl, i, en_x, en_y, en_vx, en_vy, en_alive, en_ground, w, h, gravity, screen_width, height, width, cell_size);
+
+			if (en_alive[i] && en_ground[i])
+			{
+				if (en_timer[i] > 0)
+				{
+					en_timer[i] -= 1;
+				}
+
+				bool near_player = same_level && dx < 6 * cell_size;
+				float speed = 2;
+				if (near_player)
+				{
+					speed = 5;
+					en_dir[i] = toward;
+				}
+
+				if (near_player && dx < 3 * cell_size && en_timer[i] <= 0)
+				{
+					// leap at the player
+					en_vx[i] = 7 * toward;
+					en_vy[i] = -12;
+					en_ground[i] = false;
+					en_timer[i] = 90;
+				}
+				else if (walk_enemy(lvl, i, en_x, en_y, en_dir, en_alive, w, h, speed, screen_width, height, width, cell_size) == 1)
+				{
+					// patrolling leopards turn around, sprinting ones stop at the ledge
+					if (!near_player)
+					{
+						en_dir[i] = -en_dir[i];
+					}
+				}
+			}
+		}
+		else if (type == 4)
+		{
+			// ---- green shooter ----
+			en_dir[i] = toward;
+		}
+		else if (type == 5)
+		{
+			// ---- tribal warrior ----
+			bool charge = same_level && dx < 4 * cell_size;
+			float speed = 1.5;
+			if (charge)
+			{
+				speed = 3;
+				en_dir[i] = toward;
+			}
+			if (walk_enemy(lvl, i, en_x, en_y, en_dir, en_alive, w, h, speed, screen_width, height, width, cell_size) == 1)
+			{
+				if (!charge)
+				{
+					en_dir[i] = -en_dir[i];
+				}
+			}
+		}
+		else
+		{
+			// ---- leaping fish ----
+			// en_y = 790 means it rests under the water (hidden by the status bar).
+			// en_vx is 0 while it has not shot yet during this leap.
+			en_dir[i] = toward;
+			if (en_ground[i])
+			{
+				en_timer[i] -= 1;
+				if (en_timer[i] <= 0)
+				{
+					en_ground[i] = false;
+					en_vy[i] = -16;
+					en_vx[i] = 0;
+				}
+			}
+			else
+			{
+				en_y[i] += en_vy[i];
+				en_vy[i] += 0.8;
+				if (en_y[i] >= 790)
+				{
+					en_y[i] = 790;
+					en_vy[i] = 0;
+					en_ground[i] = true;
+					en_timer[i] = 80 + random_number(seed, 80);
+				}
+			}
 		}
 	}
 }
@@ -897,6 +1293,26 @@ bool touching_enemy(const int current_screen, int en_type[], int en_screen[], fl
 	return false;
 }
 
+// the biggest contact damage of the living enemies that touch the rectangle (0 = none)
+int touching_damage(const int current_screen, int en_type[], int en_screen[], float en_x[], float en_y[], bool en_alive[], const int max_enemies, const float rx, const float ry, const float rw, const float rh)
+{
+	int worst = 0;
+	for (int i = 0; i < max_enemies; i += 1)
+	{
+		if (en_alive[i] && en_screen[i] == current_screen)
+		{
+			if (rects_overlap(rx, ry, rw, rh, en_x[i], en_y[i], enemy_width(en_type[i]), enemy_height(en_type[i])))
+			{
+				if (enemy_damage(en_type[i]) > worst)
+				{
+					worst = enemy_damage(en_type[i]);
+				}
+			}
+		}
+	}
+	return worst;
+}
+
 void draw_enemies(RenderWindow& window, Sprite enemySprite[], const int current_screen, int en_type[], int en_screen[], float en_x[], float en_y[], int en_dir[], bool en_alive[], const int max_enemies)
 {
 	for (int i = 0; i < max_enemies; i += 1)
@@ -905,7 +1321,7 @@ void draw_enemies(RenderWindow& window, Sprite enemySprite[], const int current_
 		{
 			int t = en_type[i];
 
-			// the crawler and the jumper face right, the flying insect picture faces left
+			// every picture faces right except the flying insect
 			bool face_right = en_dir[i] > 0;
 			if (t == 2)
 			{
@@ -923,6 +1339,129 @@ void draw_enemies(RenderWindow& window, Sprite enemySprite[], const int current_
 				enemySprite[t].setPosition(en_x[i] + enemy_width(t), en_y[i]);
 			}
 			window.draw(enemySprite[t]);
+		}
+	}
+}
+
+// ---------------------------------------------------------------
+// ENEMY SHOTS: bolts of the green shooters (kind 0, 24 x 8) and fireballs of the fish (kind 1, 16 x 16)
+// ---------------------------------------------------------------
+
+void clear_shots(bool shot_active[], const int max_shots)
+{
+	for (int i = 0; i < max_shots; i += 1)
+	{
+		shot_active[i] = false;
+	}
+}
+
+void add_shot(float shot_x[], float shot_y[], float shot_vx[], int shot_kind[], bool shot_active[], const int max_shots, const float x, const float y, const float vx, const int kind)
+{
+	for (int i = 0; i < max_shots; i += 1)
+	{
+		if (!shot_active[i])
+		{
+			shot_active[i] = true;
+			shot_x[i] = x;
+			shot_y[i] = y;
+			shot_vx[i] = vx;
+			shot_kind[i] = kind;
+			return;
+		}
+	}
+}
+
+// shooters fire a bolt every 90 frames, fish throw a fireball at the top of their jump
+void enemy_fire(const int current_screen, const float player_x, int en_type[], int en_screen[], float en_x[], float en_y[], float en_vx[], float en_vy[], bool en_alive[], bool en_ground[], int en_timer[], const int max_enemies, float shot_x[], float shot_y[], float shot_vx[], int shot_kind[], bool shot_active[], const int max_shots)
+{
+	for (int i = 0; i < max_enemies; i += 1)
+	{
+		if (!en_alive[i] || en_screen[i] != current_screen)
+		{
+			continue;
+		}
+
+		int dir = 1;
+		if (player_x < en_x[i])
+		{
+			dir = -1;
+		}
+
+		if (en_type[i] == 4)
+		{
+			en_timer[i] -= 1;
+			if (en_timer[i] <= 0)
+			{
+				float x = en_x[i] + enemy_width(4);
+				if (dir < 0)
+				{
+					x = en_x[i] - 24;
+				}
+				add_shot(shot_x, shot_y, shot_vx, shot_kind, shot_active, max_shots, x, en_y[i] + 24, 6 * dir, 0);
+				en_timer[i] = 90;
+			}
+		}
+		else if (en_type[i] == 6)
+		{
+			if (!en_ground[i] && en_vx[i] == 0 && en_vy[i] >= 0)
+			{
+				add_shot(shot_x, shot_y, shot_vx, shot_kind, shot_active, max_shots, en_x[i] + 8, en_y[i] + 8, 5 * dir, 1);
+				en_vx[i] = 1;
+			}
+		}
+	}
+}
+
+// moves the shots; they disappear at walls and at the edge of the screen
+void update_enemy_shots(char** lvl, float shot_x[], float shot_y[], float shot_vx[], int shot_kind[], bool shot_active[], const int max_shots, const int screen_width, const int height, const int width, const int cell_size)
+{
+	for (int i = 0; i < max_shots; i += 1)
+	{
+		if (shot_active[i])
+		{
+			shot_x[i] += shot_vx[i];
+
+			int w = 24;
+			int h = 8;
+			if (shot_kind[i] == 1)
+			{
+				w = 16;
+				h = 16;
+			}
+
+			float lead_x = shot_x[i];
+			if (shot_vx[i] > 0)
+			{
+				lead_x += w;
+			}
+
+			if (lead_x < 0 || lead_x >= screen_width || is_solid(lvl, lead_x, shot_y[i] + h / 2, height, width, cell_size))
+			{
+				shot_active[i] = false;
+			}
+		}
+	}
+}
+
+void draw_enemy_shots(RenderWindow& window, Sprite shotSprite[], float shot_x[], float shot_y[], float shot_vx[], int shot_kind[], bool shot_active[], const int max_shots)
+{
+	for (int i = 0; i < max_shots; i += 1)
+	{
+		if (shot_active[i])
+		{
+			int k = shot_kind[i];
+			if (shot_vx[i] > 0 || k == 1)
+			{
+				shotSprite[k].setScale(1, 1);
+				shotSprite[k].setPosition(shot_x[i], shot_y[i]);
+			}
+			else
+			{
+				// the bolt picture points right: mirror it for shots going left
+				shotSprite[k].setScale(-1, 1);
+				shotSprite[k].setPosition(shot_x[i] + 24, shot_y[i]);
+			}
+			window.draw(shotSprite[k]);
 		}
 	}
 }
@@ -1156,7 +1695,7 @@ void draw_hud_number(RenderWindow& window, Sprite& hud, const int number, const 
 }
 
 // the whole status bar: score, ammo, time, lives, kills, weapon boxes, health bar and stage
-void draw_hud(RenderWindow& window, Sprite& hud, Sprite& hudBack, const int screen_width, const int screen_height, const int weapon, const int magnum_ammo, const int grenade_ammo, const int health, const int max_health, const int time_left, const int lives, const int defeated, const int score)
+void draw_hud(RenderWindow& window, Sprite& hud, Sprite& hudBack, const int screen_width, const int screen_height, const int weapon, const int magnum_ammo, const int grenade_ammo, const int health, const int max_health, const int time_left, const int lives, const int defeated, const int score, const int level)
 {
 	const int strip_height = 28 * 4;
 	float hud_x = (screen_width - 256 * 4) / 2;
@@ -1219,8 +1758,448 @@ void draw_hud(RenderWindow& window, Sprite& hud, Sprite& hudBack, const int scre
 
 	// row 3: STAGE and the (empty) enemy bar label
 	draw_hud_text(window, hud, "STAGE", left, row3, hud_x, hud_y);
-	draw_hud_text(window, hud, "2-1", left + 56, row3, hud_x, hud_y);
+	// the stage number: 2-1, 2-2, 2-3 (as in the NES game)
+	char stage[4];
+	stage[0] = '2';
+	stage[1] = '-';
+	stage[2] = '0' + level;
+	stage[3] = '\0';
+	draw_hud_text(window, hud, stage, left + 56, row3, hud_x, hud_y);
 	draw_hud_text(window, hud, "E", left + 144, row3, hud_x, hud_y);
+}
+
+// ---------------------------------------------------------------
+// BREAKABLE VINES ('Y'): climbed like ladders. After the player has held on to a vine cell for 90 frames
+// it breaks (the cell disappears) and it grows back 240 frames later.
+// vine[row][col]: 0 = normal, 1..89 = about to break, negative = gone, counting up to 0
+// ---------------------------------------------------------------
+void update_vines(char** lvl, int** vine, const float player_x, const int Pwidth, const float player_y, const int Pheight, const bool climbing, const int height, const int width, const int cell_size)
+{
+	if (climbing)
+	{
+		int col = (int)(player_x + Pwidth / 2) / cell_size;
+		int row = (int)(player_y + Pheight / 2) / cell_size;
+		if (row >= 0 && row < height && col >= 0 && col < width && lvl[row][col] == 'Y' && vine[row][col] == 0)
+		{
+			vine[row][col] = 1;
+		}
+	}
+
+	for (int r = 0; r < height; r += 1)
+	{
+		for (int c = 0; c < width; c += 1)
+		{
+			if (vine[r][c] > 0)
+			{
+				vine[r][c] += 1;
+				if (vine[r][c] >= 90)
+				{
+					lvl[r][c] = ' ';
+					vine[r][c] = -240;
+				}
+			}
+			else if (vine[r][c] < 0)
+			{
+				vine[r][c] += 1;
+				if (vine[r][c] == 0)
+				{
+					lvl[r][c] = 'Y';
+				}
+			}
+		}
+	}
+}
+
+// ---------------------------------------------------------------
+// SWING VINES ('Z'): press Up next to one to grab it. Left / Right swing the player along an arc
+// (up to 2 cells to each side), Space or Down lets go, and reaching the end of the arc lets go too.
+// ---------------------------------------------------------------
+void swing_vine(char** lvl, bool& swinging, float& anchor_x, float& base_y, float& vine_len, float& swing_dx, int& swing_frames, float& player_x, float& player_y, float& velocityY, bool& facingRight, const bool climbing, const int Pwidth, const int Pheight, const int height, const int width, const int cell_size)
+{
+	bool up = Keyboard::isKeyPressed(Keyboard::Up);
+	bool down = Keyboard::isKeyPressed(Keyboard::Down);
+	bool left = Keyboard::isKeyPressed(Keyboard::Left);
+	bool right = Keyboard::isKeyPressed(Keyboard::Right);
+	bool jump = Keyboard::isKeyPressed(Keyboard::Space);
+
+	if (!swinging)
+	{
+		if (!up || climbing)
+		{
+			return;
+		}
+
+		// is there a swing vine at the player's body?
+		float center_x = player_x + Pwidth / 2;
+		int col = (int)center_x / cell_size;
+		int found_row = -1;
+		if (col >= 0 && col < width)
+		{
+			for (float y = player_y + 4; y < player_y + Pheight && found_row < 0; y += 16)
+			{
+				int row = (int)y / cell_size;
+				if (row >= 0 && row < height && lvl[row][col] == 'Z')
+				{
+					found_row = row;
+				}
+			}
+		}
+		if (found_row < 0)
+		{
+			return;
+		}
+
+		// measure the vine: the player hangs with his feet at its lower end
+		int r1 = found_row;
+		while (r1 > 0 && lvl[r1 - 1][col] == 'Z')
+		{
+			r1 -= 1;
+		}
+		int r2 = found_row;
+		while (r2 < height - 1 && lvl[r2 + 1][col] == 'Z')
+		{
+			r2 += 1;
+		}
+
+		anchor_x = col * cell_size + cell_size / 2;
+		vine_len = (r2 + 1 - r1) * cell_size;
+		base_y = (r2 + 1) * cell_size - Pheight;
+		swing_dx = center_x - anchor_x;
+		if (swing_dx > 128)
+		{
+			swing_dx = 128;
+		}
+		if (swing_dx < -128)
+		{
+			swing_dx = -128;
+		}
+		swing_frames = 0;
+		swinging = true;
+		velocityY = 0;
+	}
+
+	swing_frames += 1;
+
+	// the arc is 128 pixels to each side (less on a very short vine)
+	float limit = 128;
+	if (vine_len * 0.9 < limit)
+	{
+		limit = vine_len * 0.9;
+	}
+
+	// let go (not in the first 20 frames, so the jump that grabbed the vine does not let go again)
+	if ((jump || down) && swing_frames > 20)
+	{
+		swinging = false;
+		velocityY = -8;
+		return;
+	}
+
+	if (left)
+	{
+		swing_dx -= 4;
+		facingRight = false;
+	}
+	else if (right)
+	{
+		swing_dx += 4;
+		facingRight = true;
+	}
+	else if (swing_dx > 1)
+	{
+		swing_dx -= 1;
+	}
+	else if (swing_dx < -1)
+	{
+		swing_dx += 1;
+	}
+
+	if (swing_dx > limit)
+	{
+		swing_dx = limit;
+	}
+	if (swing_dx < -limit)
+	{
+		swing_dx = -limit;
+	}
+
+	// the player moves on a circle: he rises a little at both ends of the arc
+	float rise = vine_len - sqrt(vine_len * vine_len - swing_dx * swing_dx);
+	player_x = anchor_x + swing_dx - Pwidth / 2;
+	player_y = base_y - rise;
+
+	// the end of the arc: let go and drop onto the platform there
+	if ((swing_dx >= limit || swing_dx <= -limit) && swing_frames > 5)
+	{
+		swinging = false;
+		velocityY = -4;
+	}
+}
+
+// ---------------------------------------------------------------
+// PICKUPS: kind 0 ammo, 1 health, 2 damage boost, 3 time dilation, 4 double jump, 5 health regeneration
+// ---------------------------------------------------------------
+
+void add_pickup(int pk_kind[], int pk_screen[], float pk_x[], float pk_y[], bool pk_active[], int pk_timer[], const int max_pickups, const int kind, const int screen, const float x, const float y, const int timer)
+{
+	for (int i = 0; i < max_pickups; i += 1)
+	{
+		if (!pk_active[i])
+		{
+			pk_active[i] = true;
+			pk_kind[i] = kind;
+			pk_screen[i] = screen;
+			pk_x[i] = x;
+			pk_y[i] = y;
+			pk_timer[i] = timer;
+			return;
+		}
+	}
+}
+
+// the five pickups of a level: ammo, health, damage boost, time dilation, double jump
+// (screen, column, row of the girder they lie on)
+void place_level_pickups(const int level, int pk_kind[], int pk_screen[], float pk_x[], float pk_y[], bool pk_active[], int pk_timer[], const int max_pickups, const int cell_size)
+{
+	for (int i = 0; i < max_pickups; i += 1)
+	{
+		pk_active[i] = false;
+	}
+
+	int screen[5];
+	int col[5];
+	int row[5];
+
+	if (level == 1)
+	{
+		int s[5] = { 0, 2, 1, 1, 3 };
+		int c[5] = { 9, 9, 12, 8, 11 };
+		int r[5] = { 11, 11, 8, 10, 5 };
+		for (int k = 0; k < 5; k += 1)
+		{
+			screen[k] = s[k];
+			col[k] = c[k];
+			row[k] = r[k];
+		}
+	}
+	else if (level == 2)
+	{
+		int s[5] = { 0, 2, 3, 1, 4 };
+		int c[5] = { 14, 14, 12, 2, 10 };
+		int r[5] = { 5, 10, 5, 11, 7 };
+		for (int k = 0; k < 5; k += 1)
+		{
+			screen[k] = s[k];
+			col[k] = c[k];
+			row[k] = r[k];
+		}
+	}
+	else
+	{
+		int s[5] = { 2, 1, 4, 3, 5 };
+		int c[5] = { 9, 9, 12, 14, 5 };
+		int r[5] = { 7, 4, 6, 11, 8 };
+		for (int k = 0; k < 5; k += 1)
+		{
+			screen[k] = s[k];
+			col[k] = c[k];
+			row[k] = r[k];
+		}
+	}
+
+	// kinds 0 to 4 in this order
+	for (int k = 0; k < 5; k += 1)
+	{
+		add_pickup(pk_kind, pk_screen, pk_x, pk_y, pk_active, pk_timer, max_pickups, k, screen[k], col[k] * cell_size + 16, row[k] * cell_size - 32, -1);
+	}
+}
+
+// finds a random place to stand on the current screen: a solid, non-crumbling cell with free space above it
+bool find_standable_spot(char** lvl, long long& seed, const int height, const int width, const int cell_size, float& x, float& y)
+{
+	for (int attempt = 0; attempt < 40; attempt += 1)
+	{
+		int col = 2 + random_number(seed, width - 4);
+		int candidates[14];
+		int number = 0;
+		for (int row = 2; row < height; row += 1)
+		{
+			if (is_solid_char(lvl[row][col]) && lvl[row][col] != 'C' && lvl[row - 1][col] == ' ' && lvl[row - 2][col] == ' ')
+			{
+				candidates[number] = row;
+				number += 1;
+			}
+		}
+		if (number > 0)
+		{
+			int row = candidates[random_number(seed, number)];
+			x = col * cell_size + 16;
+			y = row * cell_size - 32;
+			return true;
+		}
+	}
+	return false;
+}
+
+// timed pickups (the health regeneration) vanish when their timer runs out;
+// touching a pickup on the current screen collects it
+void update_pickups(const int current_screen, const float player_x, const float player_y, const int Pwidth, const int Pheight, int pk_kind[], int pk_screen[], float pk_x[], float pk_y[], bool pk_active[], int pk_timer[], const int max_pickups, int& magnum_ammo, int& grenade_ammo, int& health, const int max_health, int& extra_hp, int& boost_timer, int& slow_timer, bool& double_jump_on, int& shield_timer)
+{
+	for (int i = 0; i < max_pickups; i += 1)
+	{
+		if (!pk_active[i])
+		{
+			continue;
+		}
+
+		if (pk_timer[i] > 0)
+		{
+			pk_timer[i] -= 1;
+			if (pk_timer[i] == 0)
+			{
+				pk_active[i] = false;
+				continue;
+			}
+		}
+
+		if (pk_screen[i] == current_screen && rects_overlap(player_x, player_y, Pwidth, Pheight, pk_x[i], pk_y[i], 32, 32))
+		{
+			pk_active[i] = false;
+			int kind = pk_kind[i];
+
+			if (kind == 0)
+			{
+				magnum_ammo = 10;
+				grenade_ammo = 3;
+			}
+			else if (kind == 1)
+			{
+				health += 30;
+				if (health > max_health)
+				{
+					health = max_health;
+				}
+			}
+			else if (kind == 2)
+			{
+				boost_timer = 600;
+			}
+			else if (kind == 3)
+			{
+				slow_timer = 420;
+			}
+			else if (kind == 4)
+			{
+				double_jump_on = true;
+			}
+			else
+			{
+				// health regeneration: +100 health, the part that does not fit is saved for the next life,
+				// and damage is reduced by 75% for 4 seconds
+				int room = max_health - health;
+				int heal = 100;
+				if (heal > room)
+				{
+					heal = room;
+				}
+				health += heal;
+				extra_hp += 100 - heal;
+				if (extra_hp > 100)
+				{
+					extra_hp = 100;
+				}
+				shield_timer = 240;
+			}
+		}
+	}
+}
+
+void draw_pickups(RenderWindow& window, Sprite pickupSprite[], const int current_screen, int pk_kind[], int pk_screen[], float pk_x[], float pk_y[], bool pk_active[], const int max_pickups)
+{
+	for (int i = 0; i < max_pickups; i += 1)
+	{
+		if (pk_active[i] && pk_screen[i] == current_screen)
+		{
+			int picture = pk_kind[i];
+			if (picture == 5)
+			{
+				picture = 1;
+			}
+			pickupSprite[picture].setPosition(pk_x[i], pk_y[i]);
+			window.draw(pickupSprite[picture]);
+		}
+	}
+}
+
+// ---------------------------------------------------------------
+// LEVEL EXIT AND DAMAGE
+// ---------------------------------------------------------------
+
+// true if the player touches an exit cell ('E')
+bool touching_exit(char** lvl, const float player_x, const float player_y, const int Pwidth, const int Pheight, const int height, const int width, const int cell_size)
+{
+	for (int r = 0; r < height; r += 1)
+	{
+		for (int c = 0; c < width; c += 1)
+		{
+			if (lvl[r][c] == 'E' && rects_overlap(player_x, player_y, Pwidth, Pheight, c * cell_size, r * cell_size, cell_size, cell_size))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+// damage after the health regeneration shield (75% less while it lasts)
+int reduced_damage(const int amount, const int shield_timer)
+{
+	if (shield_timer > 0)
+	{
+		int reduced = amount / 4;
+		if (reduced < 1)
+		{
+			reduced = 1;
+		}
+		return reduced;
+	}
+	return amount;
+}
+
+// ---------------------------------------------------------------
+// GAME OVER / YOU WIN screens, written with the HUD font
+// ---------------------------------------------------------------
+
+// draws a line of text in the middle of the window, y is in screen pixels
+void draw_centered_text(RenderWindow& window, Sprite& hud, const char text[], const int y, const int screen_width)
+{
+	int length = 0;
+	while (text[length] != '\0')
+	{
+		length += 1;
+	}
+	float x = (screen_width - length * 32) / 2;
+	draw_hud_text(window, hud, text, 0, 0, x, y);
+}
+
+void draw_end_screen(RenderWindow& window, Sprite& hud, const int screen_width, const bool won, const int score)
+{
+	if (won)
+	{
+		draw_centered_text(window, hud, "YOU WIN", 280, screen_width);
+	}
+	else
+	{
+		draw_centered_text(window, hud, "GAME OVER", 280, screen_width);
+	}
+
+	char line[40];
+	line[0] = '\0';
+	append_text(line, "SCORE ");
+	append_number(line, score);
+	draw_centered_text(window, hud, line, 380, screen_width);
+	draw_centered_text(window, hud, "PRESS R TO PLAY AGAIN", 480, screen_width);
+	draw_centered_text(window, hud, "PRESS ESCAPE TO QUIT", 540, screen_width);
 }
 
 // ---------------------------------------------------------------
@@ -1374,28 +2353,31 @@ int main()
 	const int width = 18;
 	char** lvl;
 
-	// flip-screen scrolling
-	const int total_screens = 4;
+	// the level being played (1 to 3), its number of screens, and the screen the player is on
+	int level = 1;
+	int total_screens = 4;
 	int current_screen = 0;
 
-	// level and background textures and sprites
-	Texture bgTex;
+	// one background for every level
+	Texture bgTexture[3];
 	Sprite bgSprite;
+	const char* bg_file[3] = { "Data/bg.png", "Data/bg_port.png", "Data/bg_jungle.png" };
+	for (int i = 0; i < 3; i += 1)
+	{
+		if (!bgTexture[i].loadFromFile(bg_file[i]))
+		{
+			cout << "Could not load " << bg_file[i] << " (run the game from the folder that contains Data/)" << endl;
+			return 1;
+		}
+	}
+	bgSprite.setTexture(bgTexture[0]);
+	bgSprite.setPosition(0, 0);
 
 	// one picture for every kind of tile (see tile_number)
 	const int num_tiles = 14;
 	Texture tileTexture[num_tiles];
 	Sprite tileSprite[num_tiles];
 	const char* tile_file[num_tiles] = { "Data/block1.png", "Data/girder_h.png", "Data/girder_v.png", "Data/girder_crumble.png", "Data/container.png", "Data/mesh.png", "Data/rock.png", "Data/girder_hazard.png", "Data/ladder.png", "Data/exit.png", "Data/vine.png", "Data/vine_swing.png", "Data/water.png", "Data/waterfall.png" };
-
-	if (!bgTex.loadFromFile("Data/bg.png"))
-	{
-		cout << "Could not load Data/bg.png (run the game from the folder that contains Data/)" << endl;
-		return 1;
-	}
-	bgSprite.setTexture(bgTex);
-	bgSprite.setPosition(0, 0);
-
 	for (int i = 0; i < num_tiles; i += 1)
 	{
 		if (!tileTexture[i].loadFromFile(tile_file[i]))
@@ -1456,6 +2438,17 @@ int main()
 	PlayerSprite.setScale(3, 3);
 	PlayerSprite.setPosition(player_x, player_y);
 
+	// double jump (a pickup) and swinging on a swing vine
+	bool double_jump_on = false;
+	bool used_double = false;
+	bool jump_prev = false;
+	bool swinging = false;
+	float swing_anchor_x = 0;
+	float swing_base_y = 0;
+	float swing_len = 0;
+	float swing_dx = 0;
+	int swing_frames = 0;
+
 	// weapons: 1 = laser whip, 2 = .44 magnum, 3 = grenades
 	int weapon = 1;
 	int magnum_ammo = 10;
@@ -1463,8 +2456,13 @@ int main()
 	bool prev_fire = false;
 	int whip_timer = 0;
 
+	// health, and the effects of the power-ups (timers count frames, 60 per second)
 	int health = 100;
 	const int max_health = 100;
+	int extra_hp = 0;
+	int boost_timer = 0;
+	int slow_timer = 0;
+	int shield_timer = 0;
 
 	const int max_bullets = 10;
 	float bullet_x[max_bullets];
@@ -1513,12 +2511,10 @@ int main()
 	// the TIME counter of the HUD counts down once per second (60 frames)
 	int time_left = 300;
 	int time_frames = 0;
+	int level_frames = 0;
 
-	// enemies (level 1: 4 crawlers + 5 blue jumpers + 6 flying insects)
-	const int num_crawlers = 4;
-	const int num_jumpers = 5;
-	const int num_insects = 6;
-	const int max_enemies = num_crawlers + num_jumpers + num_insects;
+	// enemies (the biggest level, level 3, has 40)
+	const int max_enemies = 40;
 	int en_type[max_enemies];
 	int en_screen[max_enemies];
 	float en_x[max_enemies];
@@ -1530,15 +2526,44 @@ int main()
 	bool en_alive[max_enemies];
 	bool en_ground[max_enemies];
 	int en_timer[max_enemies];
+	bool was_alive[max_enemies];
+	int en_total = 0;
+
+	// shots of the enemies
+	const int max_shots = 12;
+	float shot_x[max_shots];
+	float shot_y[max_shots];
+	float shot_vx[max_shots];
+	int shot_kind[max_shots];
+	bool shot_active[max_shots];
+	clear_shots(shot_active, max_shots);
+
+	// pickups and power-ups
+	const int max_pickups = 16;
+	int pk_kind[max_pickups];
+	int pk_screen[max_pickups];
+	float pk_x[max_pickups];
+	float pk_y[max_pickups];
+	bool pk_active[max_pickups];
+	int pk_timer[max_pickups];
+	for (int i = 0; i < max_pickups; i += 1)
+	{
+		pk_active[i] = false;
+	}
+	int regen_wait = 1500;
 
 	int score = 0;
 	int deaths = 0;
 	int hurt_timer = 0;
 
-	Texture enemyTexture[3];
-	Sprite enemySprite[3];
-	const char* enemy_file[3] = { "Data/crawler.png", "Data/jumper.png", "Data/insect.png" };
-	for (int i = 0; i < 3; i += 1)
+	// 0 = playing, 1 = game over, 2 = you win
+	int game_state = 0;
+	bool new_level = true;
+
+	Texture enemyTexture[7];
+	Sprite enemySprite[7];
+	const char* enemy_file[7] = { "Data/crawler.png", "Data/jumper.png", "Data/insect.png", "Data/leopard.png", "Data/shooter.png", "Data/tribal.png", "Data/fish.png" };
+	for (int i = 0; i < 7; i += 1)
 	{
 		if (!enemyTexture[i].loadFromFile(enemy_file[i]))
 		{
@@ -1548,19 +2573,31 @@ int main()
 		enemySprite[i].setTexture(enemyTexture[i]);
 	}
 
-	long long seed = time(0);
-	// a temporary level array, only used by spawn_enemies to look for girders
-	char** temp_lvl = new char* [height];
-	for (int i = 0; i < height; i += 1)
+	Texture pickupTexture[5];
+	Sprite pickupSprite[5];
+	const char* pickup_file[5] = { "Data/pickup_ammo.png", "Data/pickup_health.png", "Data/pickup_boost.png", "Data/pickup_time.png", "Data/pickup_doublejump.png" };
+	for (int i = 0; i < 5; i += 1)
 	{
-		temp_lvl[i] = new char[width];
+		if (!pickupTexture[i].loadFromFile(pickup_file[i]))
+		{
+			cout << "Could not load " << pickup_file[i] << endl;
+			return 1;
+		}
+		pickupSprite[i].setTexture(pickupTexture[i]);
 	}
-	spawn_enemies(en_type, en_screen, en_x, en_y, en_vx, en_vy, en_dir, en_health, en_alive, en_ground, en_timer, seed, max_enemies, num_crawlers, num_jumpers, total_screens, screen_x, temp_lvl, height, width, cell_size);
-	for (int i = 0; i < height; i += 1)
+
+	Texture shotTexture[2];
+	Sprite shotSprite[2];
+	const char* shot_file[2] = { "Data/bolt.png", "Data/fireball.png" };
+	for (int i = 0; i < 2; i += 1)
 	{
-		delete[] temp_lvl[i];
+		if (!shotTexture[i].loadFromFile(shot_file[i]))
+		{
+			cout << "Could not load " << shot_file[i] << endl;
+			return 1;
+		}
+		shotSprite[i].setTexture(shotTexture[i]);
 	}
-	delete[] temp_lvl;
 
 	// player body parts (see draw_player)
 	bool use_body_parts = true;
@@ -1580,6 +2617,15 @@ int main()
 	bool moving = false;
 	bool climb_moving = false;
 
+	long long seed = time(0);
+
+	// a temporary level array, only used by spawn_enemies to look for girders
+	char** temp_lvl = new char* [height];
+	for (int i = 0; i < height; i += 1)
+	{
+		temp_lvl[i] = new char[width];
+	}
+
 	// creating level array
 	lvl = new char* [height];
 	for (int i = 0; i < height; i += 1)
@@ -1587,13 +2633,15 @@ int main()
 		lvl[i] = new char[width];
 	}
 
-	// timers of the crumbling girders
+	// timers of the crumbling girders and of the breakable vines
 	int** crumble = new int* [height];
+	int** vine = new int* [height];
 	for (int i = 0; i < height; i += 1)
 	{
 		crumble[i] = new int[width];
+		vine[i] = new int[width];
 	}
-	enter_screen(lvl, crumble, current_screen, height, width);
+	enter_screen(lvl, crumble, vine, level, current_screen, height, width);
 
 	Event ev;
 	// main loop
@@ -1613,22 +2661,140 @@ int main()
 			window.close();
 		}
 
+		// the end screens: R starts a new game
+		if (game_state != 0)
+		{
+			if (Keyboard::isKeyPressed(Keyboard::R))
+			{
+				level = 1;
+				score = 0;
+				deaths = 0;
+				health = max_health;
+				extra_hp = 0;
+				game_state = 0;
+				new_level = true;
+			}
+
+			window.clear();
+			draw_end_screen(window, hud, screen_x, game_state == 2, score);
+			window.display();
+			continue;
+		}
+
+		// a new level starts: build everything that belongs to it
+		if (new_level)
+		{
+			new_level = false;
+
+			if (level == 1)
+			{
+				total_screens = 4;
+			}
+			else if (level == 2)
+			{
+				total_screens = 5;
+			}
+			else
+			{
+				total_screens = 6;
+			}
+			current_screen = 0;
+			bgSprite.setTexture(bgTexture[level - 1]);
+
+			en_total = spawn_enemies(level, en_type, en_screen, en_x, en_y, en_vx, en_vy, en_dir, en_health, en_alive, en_ground, en_timer, seed, max_enemies, total_screens, screen_x, temp_lvl, height, width, cell_size);
+			for (int i = 0; i < max_enemies; i += 1)
+			{
+				was_alive[i] = en_alive[i];
+			}
+
+			clear_shots(shot_active, max_shots);
+			for (int i = 0; i < max_bullets; i += 1)
+			{
+				bullet_active[i] = false;
+			}
+			for (int i = 0; i < max_grenades; i += 1)
+			{
+				grenade_active[i] = false;
+			}
+			place_level_pickups(level, pk_kind, pk_screen, pk_x, pk_y, pk_active, pk_timer, max_pickups, cell_size);
+			regen_wait = 1500;
+
+			// ammo is restocked at the start of every level and the power-ups end
+			magnum_ammo = 10;
+			grenade_ammo = 3;
+			boost_timer = 0;
+			slow_timer = 0;
+			shield_timer = 0;
+			double_jump_on = false;
+			used_double = false;
+
+			player_x = 100;
+			player_y = 500;
+			velocityY = 0;
+			climbing = false;
+			ducking = false;
+			swinging = false;
+			PlayerHeight = StandHeight;
+			safe_x = 100;
+			safe_y = 608;
+			safe_screen = 0;
+			hurt_timer = 0;
+
+			time_left = 300;
+			time_frames = 0;
+			level_frames = 0;
+
+			enter_screen(lvl, crumble, vine, level, current_screen, height, width);
+		}
+
+		level_frames += 1;
+		anim_counter += 1;
+
 		// remember where the player was, to know if he moved this frame
 		float old_x = player_x;
 		float old_y = player_y;
+		bool was_ground = onGround;
 
-		// update (no gravity while climbing a ladder)
-		player_input(lvl, player_x, player_y, velocityY, onGround, facingRight, ducking, climbing, PlayerHeight, PlayerWidth, StandHeight, DuckHeight, speed, jump_speed, climb_speed, screen_x, cell_size, height, width);
-		if (!climbing)
+		// swinging on a vine, or normal movement (no gravity while climbing a ladder or a vine)
+		swing_vine(lvl, swinging, swing_anchor_x, swing_base_y, swing_len, swing_dx, swing_frames, player_x, player_y, velocityY, facingRight, climbing, PlayerWidth, PlayerHeight, height, width, cell_size);
+		if (swinging)
 		{
-			player_gravity(lvl, velocityY, onGround, gravity, terminal_Velocity, player_x, player_y, cell_size, height, width, PlayerHeight, PlayerWidth);
+			onGround = false;
+		}
+		else
+		{
+			player_input(lvl, player_x, player_y, velocityY, onGround, facingRight, ducking, climbing, PlayerHeight, PlayerWidth, StandHeight, DuckHeight, speed, jump_speed, climb_speed, screen_x, cell_size, height, width);
+			if (!climbing)
+			{
+				player_gravity(lvl, velocityY, onGround, gravity, terminal_Velocity, player_x, player_y, cell_size, height, width, PlayerHeight, PlayerWidth);
+			}
 		}
 
-		// crumbling girders
+		// double jump: a new press of Space while already in the air
+		bool jump_now = Keyboard::isKeyPressed(Keyboard::Space);
+		if (onGround || climbing || swinging)
+		{
+			used_double = false;
+		}
+		if (jump_now && !jump_prev && !was_ground && !onGround && !climbing && !swinging && double_jump_on && !used_double)
+		{
+			velocityY = jump_speed;
+			used_double = true;
+		}
+		jump_prev = jump_now;
+
+		// crumbling girders and breakable vines
 		update_crumbling(lvl, crumble, player_x, player_y, PlayerHeight, PlayerWidth, onGround, height, width, cell_size);
+		update_vines(lvl, vine, player_x, PlayerWidth, player_y, PlayerHeight, climbing, height, width, cell_size);
+
+		// a vine that broke under a climbing player makes him fall
+		if (climbing && !is_ladder(lvl, player_x + PlayerWidth / 2, player_y + PlayerHeight / 2, height, width, cell_size) && !is_ladder(lvl, player_x + PlayerWidth / 2, player_y + PlayerHeight - 1, height, width, cell_size))
+		{
+			climbing = false;
+		}
 
 		// remember the last safe spot (standing on a girder that does not crumble)
-		if (onGround && !climbing && !ducking && player_y + PlayerHeight < height * cell_size - 1)
+		if (onGround && !climbing && !swinging && !ducking && player_y + PlayerHeight < height * cell_size - 1)
 		{
 			char under = lvl[(int)(player_y + PlayerHeight + 1) / cell_size][(int)(player_x + PlayerWidth / 2) / cell_size];
 			if (is_solid_char(under) && under != 'C')
@@ -1639,25 +2805,26 @@ int main()
 			}
 		}
 
-		// falling into a pit costs 20 health and puts the player back on the last safe spot
+		// falling into a pit or into the water costs 20 health and puts the player back on the last safe spot
 		if (player_y + PlayerHeight >= height * cell_size - 1)
 		{
-			health -= 20;
+			health -= reduced_damage(20, shield_timer);
 			hurt_timer = 60;
 			current_screen = safe_screen;
-			enter_screen(lvl, crumble, current_screen, height, width);
+			enter_screen(lvl, crumble, vine, level, current_screen, height, width);
+			clear_shots(shot_active, max_shots);
 			player_x = safe_x;
 			player_y = safe_y;
 			velocityY = 0;
 			climbing = false;
+			swinging = false;
 			ducking = false;
 			PlayerHeight = StandHeight;
 		}
 
 		// animation state
-		moving = (player_x != old_x) && !climbing;
-		climb_moving = climbing && (player_y != old_y);
-		anim_counter += 1;
+		moving = (player_x != old_x) && !climbing && !swinging;
+		climb_moving = (climbing && player_y != old_y) || swinging;
 
 		// weapons
 		switch_weapon(weapon);
@@ -1678,15 +2845,28 @@ int main()
 		{
 			shoot_timer -= 1;
 		}
-		update_bullets(lvl, bullet_x, bullet_y, bullet_dir, bullet_active, max_bullets, 14, screen_x, height, width, cell_size);
-		update_grenades(lvl, grenade_x, grenade_y, grenade_vx, grenade_vy, grenade_active, max_grenades, 0.8, screen_x, height, width, cell_size, current_screen, en_type, en_screen, en_x, en_y, en_health, en_alive, max_enemies, score);
 
-		// enemies move, then weapons damage them
-		update_enemies(lvl, current_screen, player_x, en_type, en_screen, en_x, en_y, en_vx, en_vy, en_dir, en_alive, en_ground, en_timer, seed, max_enemies, 0.8, screen_x, height, width, cell_size);
+		// time dilation: enemies, their shots and the player's bullets run at half speed
+		bool slow_frame = slow_timer > 0 && anim_counter % 2 == 1;
+		if (!slow_frame)
+		{
+			update_bullets(lvl, bullet_x, bullet_y, bullet_dir, bullet_active, max_bullets, 14, screen_x, height, width, cell_size);
+			update_grenades(lvl, grenade_x, grenade_y, grenade_vx, grenade_vy, grenade_active, max_grenades, 0.8, screen_x, height, width, cell_size, current_screen, en_type, en_screen, en_x, en_y, en_health, en_alive, max_enemies, score);
 
+			update_enemies(lvl, current_screen, player_x, player_y, PlayerHeight, en_type, en_screen, en_x, en_y, en_vx, en_vy, en_dir, en_alive, en_ground, en_timer, seed, max_enemies, 0.8, screen_x, height, width, cell_size);
+			enemy_fire(current_screen, player_x, en_type, en_screen, en_x, en_y, en_vx, en_vy, en_alive, en_ground, en_timer, max_enemies, shot_x, shot_y, shot_vx, shot_kind, shot_active, max_shots);
+			update_enemy_shots(lvl, shot_x, shot_y, shot_vx, shot_kind, shot_active, max_shots, screen_x, height, width, cell_size);
+		}
+
+		// the weapons damage the enemies (the damage boost doubles the magnum)
+		int bullet_damage = 10;
+		if (boost_timer > 0)
+		{
+			bullet_damage = 20;
+		}
 		for (int i = 0; i < max_bullets; i += 1)
 		{
-			if (bullet_active[i] && hit_enemies(current_screen, en_type, en_screen, en_x, en_y, en_health, en_alive, max_enemies, bullet_x[i], bullet_y[i], 16, 8, 10, score))
+			if (bullet_active[i] && hit_enemies(current_screen, en_type, en_screen, en_x, en_y, en_health, en_alive, max_enemies, bullet_x[i], bullet_y[i], 16, 8, bullet_damage, score))
 			{
 				bullet_active[i] = false;
 			}
@@ -1702,25 +2882,84 @@ int main()
 			hit_enemies(current_screen, en_type, en_screen, en_x, en_y, en_health, en_alive, max_enemies, whip_x, player_y + 40, 64, 16, 10, score);
 		}
 
-		// touching an enemy hurts, then the player is protected for 60 frames
+		// a crawler that was killed (not lost in a pit) may drop ammo or a damage boost
+		for (int i = 0; i < max_enemies; i += 1)
+		{
+			if (was_alive[i] && !en_alive[i] && en_type[i] == 0 && en_y[i] + 32 < height * cell_size - 8)
+			{
+				int kind = 0;
+				if (random_number(seed, 2) == 0)
+				{
+					kind = 2;
+				}
+				add_pickup(pk_kind, pk_screen, pk_x, pk_y, pk_active, pk_timer, max_pickups, kind, en_screen[i], en_x[i] + 8, en_y[i], -1);
+			}
+			was_alive[i] = en_alive[i];
+		}
+
+		// touching an enemy or being hit by a shot hurts, then the player is protected for 60 frames
 		if (hurt_timer > 0)
 		{
 			hurt_timer -= 1;
 		}
-		else if (touching_enemy(current_screen, en_type, en_screen, en_x, en_y, en_alive, max_enemies, player_x, player_y, PlayerWidth, PlayerHeight))
+		else
 		{
-			health -= 10;
-			hurt_timer = 60;
+			int hit = touching_damage(current_screen, en_type, en_screen, en_x, en_y, en_alive, max_enemies, player_x, player_y, PlayerWidth, PlayerHeight);
+			for (int i = 0; i < max_shots; i += 1)
+			{
+				if (shot_active[i])
+				{
+					int sw = 24;
+					int sh = 8;
+					if (shot_kind[i] == 1)
+					{
+						sw = 16;
+						sh = 16;
+					}
+					if (rects_overlap(player_x, player_y, PlayerWidth, PlayerHeight, shot_x[i], shot_y[i], sw, sh))
+					{
+						shot_active[i] = false;
+						if (hit < 10)
+						{
+							hit = 10;
+						}
+					}
+				}
+			}
+			if (hit > 0)
+			{
+				health -= reduced_damage(hit, shield_timer);
+				hurt_timer = 60;
+			}
 		}
 
-		// TEMPORARY test keys for the health bar: Q = lose health, E = gain health
-		if (Keyboard::isKeyPressed(Keyboard::Q) && health > 0)
+		// pickups and power-ups
+		update_pickups(current_screen, player_x, player_y, PlayerWidth, PlayerHeight, pk_kind, pk_screen, pk_x, pk_y, pk_active, pk_timer, max_pickups, magnum_ammo, grenade_ammo, health, max_health, extra_hp, boost_timer, slow_timer, double_jump_on, shield_timer);
+
+		// the health regeneration power-up appears every 25 seconds on a random girder of the current screen for 6 seconds
+		regen_wait -= 1;
+		if (regen_wait <= 0)
 		{
-			health -= 1;
+			float spot_x = 0;
+			float spot_y = 0;
+			if (find_standable_spot(lvl, seed, height, width, cell_size, spot_x, spot_y))
+			{
+				add_pickup(pk_kind, pk_screen, pk_x, pk_y, pk_active, pk_timer, max_pickups, 5, current_screen, spot_x, spot_y, 360);
+			}
+			regen_wait = 1500;
 		}
-		if (Keyboard::isKeyPressed(Keyboard::E) && health < max_health)
+
+		if (boost_timer > 0)
 		{
-			health += 1;
+			boost_timer -= 1;
+		}
+		if (slow_timer > 0)
+		{
+			slow_timer -= 1;
+		}
+		if (shield_timer > 0)
+		{
+			shield_timer -= 1;
 		}
 
 		// the TIME counter: 1 per second, running out of time is death
@@ -1738,27 +2977,89 @@ int main()
 			health = 0;
 		}
 
-		// dying: respawn at the start of the level (temporary, a proper game over comes later)
+		// dying: the third death is game over, otherwise start the level again
 		if (health <= 0)
 		{
 			deaths += 1;
-			health = max_health;
-			time_left = 300;
-			time_frames = 0;
-			player_x = 100;
-			player_y = 500;
-			velocityY = 0;
-			climbing = false;
-			ducking = false;
-			PlayerHeight = StandHeight;
-			current_screen = 0;
-			enter_screen(lvl, crumble, current_screen, height, width);
+			if (deaths >= 3)
+			{
+				game_state = 1;
+			}
+			else
+			{
+				// health saved by the regeneration power-up is added to the next life
+				health = max_health + extra_hp;
+				extra_hp = 0;
+				time_left = 300;
+				time_frames = 0;
+				player_x = 100;
+				player_y = 500;
+				velocityY = 0;
+				climbing = false;
+				swinging = false;
+				ducking = false;
+				PlayerHeight = StandHeight;
+				current_screen = 0;
+				safe_x = 100;
+				safe_y = 608;
+				safe_screen = 0;
+				hurt_timer = 60;
+				enter_screen(lvl, crumble, vine, level, current_screen, height, width);
+				clear_shots(shot_active, max_shots);
+			}
 		}
 
-		// switch screen when the player walks off an edge
-		if (check_screen_change(player_x, current_screen, total_screens, screen_x, PlayerWidth))
+		// reaching the exit finishes the level: bonuses, then the next level or the win screen
+		if (game_state == 0 && touching_exit(lvl, player_x, player_y, PlayerWidth, PlayerHeight, height, width, cell_size))
 		{
-			enter_screen(lvl, crumble, current_screen, height, width);
+			if (level == 1)
+			{
+				score += 1000;
+
+				// speed bonus of level 1
+				int seconds = level_frames / 60;
+				if (seconds < 30)
+				{
+					score += 1200;
+				}
+				else if (seconds < 45)
+				{
+					score += 1000;
+				}
+				else if (seconds < 60)
+				{
+					score += 500;
+				}
+			}
+			else if (level == 2)
+			{
+				score += 1500;
+			}
+			else
+			{
+				score += 2000;
+				// all three levels without dying
+				if (deaths == 0)
+				{
+					score += 5000;
+				}
+			}
+
+			level += 1;
+			if (level > 3)
+			{
+				game_state = 2;
+			}
+			else
+			{
+				new_level = true;
+			}
+		}
+		else if (game_state == 0 && check_screen_change(player_x, current_screen, total_screens, screen_x, PlayerWidth))
+		{
+			// switch screen when the player walks off an edge
+			enter_screen(lvl, crumble, vine, level, current_screen, height, width);
+			clear_shots(shot_active, max_shots);
 		}
 
 		// temporary ducking look: squash the sprite to half height (replace with a real duck frame later)
@@ -1783,14 +3084,16 @@ int main()
 		// draw
 		window.clear();
 		display_level(window, lvl, bgSprite, tileSprite, height, width, cell_size);
+		draw_pickups(window, pickupSprite, current_screen, pk_kind, pk_screen, pk_x, pk_y, pk_active, max_pickups);
 		draw_enemies(window, enemySprite, current_screen, en_type, en_screen, en_x, en_y, en_dir, en_alive, max_enemies);
+		draw_enemy_shots(window, shotSprite, shot_x, shot_y, shot_vx, shot_kind, shot_active, max_shots);
 
 		// blink while protected after a hit
 		if (hurt_timer % 12 < 6)
 		{
 			if (use_body_parts)
 			{
-				draw_player(window, part, player_x, player_y, facingRight, ducking, climbing, onGround, moving, climb_moving, anim_counter, whip_timer, shoot_timer, hurt_timer > 0);
+				draw_player(window, part, player_x, player_y, facingRight, ducking, climbing || swinging, onGround, moving, climb_moving, anim_counter, whip_timer, shoot_timer, hurt_timer > 0);
 			}
 			else
 			{
@@ -1815,37 +3118,38 @@ int main()
 		}
 
 		draw_projectiles(window, bulletSprite, grenadeSprite, bullet_x, bullet_y, bullet_active, max_bullets, grenade_x, grenade_y, grenade_active, max_grenades);
-		// lives left (3 at the start) and how many enemies are defeated
+
+		// lives left (3 at the start) and how many enemies of this level are defeated
 		int lives = 3 - deaths;
 		if (lives < 0)
 		{
 			lives = 0;
 		}
 		int defeated = 0;
-		for (int i = 0; i < max_enemies; i += 1)
+		for (int i = 0; i < en_total; i += 1)
 		{
 			if (!en_alive[i])
 			{
 				defeated += 1;
 			}
 		}
-		draw_hud(window, hud, hudBack, screen_x, screen_y, weapon, magnum_ammo, grenade_ammo, health, max_health, time_left, lives, defeated, score);
+		draw_hud(window, hud, hudBack, screen_x, screen_y, weapon, magnum_ammo, grenade_ammo, health, max_health, time_left, lives, defeated, score, level);
 		window.display();
 	}
 
-	// stopping music and deleting level array
+	// stopping music and deleting the arrays
 	lvlMusic.stop();
 	for (int i = 0; i < height; i++)
 	{
 		delete[] lvl[i];
+		delete[] temp_lvl[i];
+		delete[] crumble[i];
+		delete[] vine[i];
 	}
 	delete[] lvl;
-
-	for (int i = 0; i < height; i++)
-	{
-		delete[] crumble[i];
-	}
+	delete[] temp_lvl;
 	delete[] crumble;
+	delete[] vine;
 
 	return 0;
 }
